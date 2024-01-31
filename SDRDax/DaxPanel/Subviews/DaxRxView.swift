@@ -10,7 +10,7 @@ import ComposableArchitecture
 import SwiftUI
 
 import FlexApiFeature
-//import LevelIndicatorView
+import LevelIndicatorView
 import SharedFeature
 
 struct DaxRxView: View {
@@ -57,7 +57,7 @@ struct DaxRxView: View {
             Slider(value: $store.daxRxSetting.gain, in: 0...100)
           }
         }
-//        LevelIndicatorView(levels: DaxModel.shared.daxRxAudioPlayer?.levels ?? SignalLevel(rms: -40, peak: -40), type: .dax)
+        LevelIndicatorView(levels: DaxModel.shared.daxRxAudioPlayer?.levels ?? SignalLevel(rms: -40, peak: -40), type: .dax)
         
         HStack {
           Text("Status:")
@@ -97,5 +97,5 @@ struct DaxRxView: View {
   DaxRxView(store: Store(initialState: SDRDax.State(daxPanelOptions: DaxPanelOptions(rawValue: 0))) {
     SDRDax()
   }, devices: [AudioDevice]())
-    .frame(minWidth: 450)
+    .frame(minWidth: 320)
 }

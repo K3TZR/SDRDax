@@ -62,5 +62,5 @@ struct DaxMicView: View {
   DaxMicView(store: Store(initialState: SDRDax.State(daxPanelOptions: DaxPanelOptions(rawValue: 0))) {
     SDRDax()
   }, devices: [AudioDevice]())
-    .frame(width: 450)
+    .frame(width: 320)
 }

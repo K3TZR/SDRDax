@@ -31,6 +31,7 @@
 		9FD26D7E2B6998B000397CBE /* DaxMicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D782B6998B000397CBE /* DaxMicView.swift */; };
 		9FD26D7F2B6998B000397CBE /* DaxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D792B6998B000397CBE /* DaxView.swift */; };
 		9FD26D832B69D2DB00397CBE /* DaxRxAudioFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D822B69D2DB00397CBE /* DaxRxAudioFeature */; };
+		9FD26D872B6ABC9D00397CBE /* LevelIndicatorView in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D862B6ABC9D00397CBE /* LevelIndicatorView */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +51,7 @@
 		9FD26D792B6998B000397CBE /* DaxView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxView.swift; sourceTree = "<group>"; };
 		9FD26D802B69D19800397CBE /* SDRApiFeatures */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SDRApiFeatures; path = ../Packages/SDRApiFeatures; sourceTree = "<group>"; };
 		9FD26D842B69EB4500397CBE /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		9FD26D882B6ABD6800397CBE /* CustomControls */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = CustomControls; path = ../Packages/CustomControls; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +63,7 @@
 				9FD26D5F2B69911100397CBE /* ListenerFeature in Frameworks */,
 				9FD26D692B69911100397CBE /* UdpFeature in Frameworks */,
 				9FD26D6D2B69911100397CBE /* XCGLogFeature in Frameworks */,
+				9FD26D872B6ABC9D00397CBE /* LevelIndicatorView in Frameworks */,
 				9FD26D612B69911100397CBE /* LoginFeature in Frameworks */,
 				9FD26D632B69911100397CBE /* PickerFeature in Frameworks */,
 				9FD26D5B2B69911000397CBE /* DirectFeature in Frameworks */,
@@ -78,6 +81,7 @@
 		9FD26D3A2B698FF800397CBE = {
 			isa = PBXGroup;
 			children = (
+				9FD26D882B6ABD6800397CBE /* CustomControls */,
 				9FD26D842B69EB4500397CBE /* README.md */,
 				9FD26D802B69D19800397CBE /* SDRApiFeatures */,
 				9FD26D452B698FF800397CBE /* SDRDax */,
@@ -174,6 +178,7 @@
 				9FD26D6A2B69911100397CBE /* VitaFeature */,
 				9FD26D6C2B69911100397CBE /* XCGLogFeature */,
 				9FD26D822B69D2DB00397CBE /* DaxRxAudioFeature */,
+				9FD26D862B6ABC9D00397CBE /* LevelIndicatorView */,
 			);
 			productName = SDRDax;
 			productReference = 9FD26D432B698FF800397CBE /* SDRDax.app */;
@@ -205,6 +210,7 @@
 			mainGroup = 9FD26D3A2B698FF800397CBE;
 			packageReferences = (
 				9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */,
+				9FD26D852B6ABC9D00397CBE /* XCRemoteSwiftPackageReference "CustomControls" */,
 			);
 			productRefGroup = 9FD26D442B698FF800397CBE /* Products */;
 			projectDirPath = "";
@@ -456,6 +462,14 @@
 				kind = branch;
 			};
 		};
+		9FD26D852B6ABC9D00397CBE /* XCRemoteSwiftPackageReference "CustomControls" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/K3TZR/CustomControls.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -517,6 +531,11 @@
 		9FD26D822B69D2DB00397CBE /* DaxRxAudioFeature */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = DaxRxAudioFeature;
+		};
+		9FD26D862B6ABC9D00397CBE /* LevelIndicatorView */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D852B6ABC9D00397CBE /* XCRemoteSwiftPackageReference "CustomControls" */;
+			productName = LevelIndicatorView;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

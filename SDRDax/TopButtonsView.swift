@@ -15,9 +15,9 @@ public struct TopButtonsView: View {
     
   var buttonText: String {
     switch store.connectionState {
-    case .disconnected: "Connect"
-    case .connected: "Disconnect"
-    default: "waiting"
+    case .disconnected: "Start"
+    case .connected: "Stop"
+    default: "---"
     }
   }
 
@@ -32,13 +32,13 @@ public struct TopButtonsView: View {
 
   public var body: some View {
     
-    HStack(spacing: 30) {
+    HStack(spacing: 10) {
       // Connection initiation
       Button(buttonText) {
         store.send(.connectButtonTapped)
       }
       .background(Color(.green).opacity(0.2))
-      .frame(width: 100)
+      .frame(width: 60)
       .disabled(buttonDisable)
       
       // Connection types
@@ -50,10 +50,10 @@ public struct TopButtonsView: View {
         Toggle(isOn: $store.smartlinkEnabled) {
           Text("Smartlink") }
       }
-      .frame(width: 180)
+      .frame(width: 170)
       .disabled(store.connectionState != .disconnected)
       
-      Toggle("Use Default", isOn: $store.useDefaultEnabled)
+      Toggle("Default", isOn: $store.useDefaultEnabled)
         .disabled( store.connectionState != .disconnected )
         .toggleStyle(.button)
     }
@@ -66,5 +66,5 @@ public struct TopButtonsView: View {
       SDRDax()
     })
   }
-  .frame(width: 450)
+  .frame(width: 320)
 }

@@ -46,7 +46,7 @@ struct DaxView: View {
           Toggle("Rx", isOn: Binding(get: { store.daxPanelOptions.contains(.rx)  }, set: {_,_  in toggleOption(.rx) } ))
           Toggle("IQ", isOn: Binding(get: { store.daxPanelOptions.contains(.iq)  }, set: {_,_  in toggleOption(.iq) } ))
         }
-        .frame(width: 280)
+//        .frame(width: 280)
       }
       Divider().background(Color(.blue))
 
@@ -61,7 +61,6 @@ struct DaxView: View {
         }
       }.scrollIndicators(.visible, axes: .vertical)
     }
-    .frame(minWidth: 450)
   }
 }
 
@@ -73,5 +72,5 @@ struct DaxView: View {
     SDRDax()
   })
     .environment(ApiModel.shared)
-    .frame(width: 450)
+    .frame(width: 320)
 }

@@ -23,7 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     
   func applicationWillTerminate(_ notification: Notification) {
     ApiModel.shared.disconnect()
-    log("SDRApiViewer: application terminated", .debug, #function, #file, #line)
+    log("SDRDax: application terminated", .debug, #function, #file, #line)
   }
   
   func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {

@@ -43,7 +43,7 @@ public struct SDRDax {
     var directGuiIp = ""                            {didSet { AppDefaults.set(directGuiIp, forKey: "directGuiIp")}}
     var directNonGuiIp = ""                         {didSet { AppDefaults.set(directNonGuiIp, forKey: "directNonGuiIp")}}
     var guiDefault: String?                         {didSet { AppDefaults.set(guiDefault, forKey: "guiDefault")}}
-    var isGui = true                                {didSet { AppDefaults.set(isGui, forKey: "isGui")}}
+    var isGui = false                               {didSet { AppDefaults.set(isGui, forKey: "isGui")}}
     var localEnabled = true                         {didSet { AppDefaults.set(localEnabled, forKey: "localEnabled")}}
     var lowBandwidthDax = false                     {didSet { AppDefaults.set(lowBandwidthDax, forKey: "lowBandwidthDax")}}
     var mtuValue = 1_300                            {didSet { AppDefaults.set(mtuValue, forKey: "mtuValue")}}
@@ -310,7 +310,7 @@ public struct SDRDax {
         try await ApiModel.shared.connect(selection: selection,
                                           isGui: state.isGui,
                                           disconnectHandle: disconnectHandle,
-                                          programName: "SDRApiViewer",
+                                          programName: "SDRDax",
                                           mtuValue: state.mtuValue,
                                           lowBandwidthDax: state.lowBandwidthDax)
         await $0(.connectionStatus(.connected))

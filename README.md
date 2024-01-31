@@ -14,7 +14,7 @@ Release builds should not be impacted.
 * macOS 14.0 and higher
 
 ##### Builds
-Compiled [RELEASE builds](https://github.com/K3TZR/SDRApiViewer/releases) will be created at relatively stable points, please use them.  If you require a DEBUG build you will have to build from sources.  
+Compiled [RELEASE builds](https://github.com/K3TZR/SDRDaxreleases) will be created at relatively stable points, please use them.  If you require a DEBUG build you will have to build from sources.  
 
 ##### Comments / Questions
 Please send any bugs / comments / questions to support@k3tzr.net  

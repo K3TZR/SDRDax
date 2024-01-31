@@ -10,6 +10,7 @@ import SwiftUI
 
 import ClientFeature
 import DirectFeature
+import FlexApiFeature
 import LoginFeature
 import PickerFeature
 import SharedFeature
@@ -48,7 +49,7 @@ struct SDRDaxView: View {
       store.send(.onAppear)
       // setup left mouse down tracking
     }
-    .frame(width: 450)
+    .frame(width: 320)
     .padding(10)
   }
 }
@@ -57,4 +58,5 @@ struct SDRDaxView: View {
   SDRDaxView(store: Store(initialState: SDRDax.State(daxPanelOptions: DaxPanelOptions(rawValue: 1))) {
     SDRDax()
   })
+  .environment(ApiModel.shared)
 }
