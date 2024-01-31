@@ -8,18 +8,47 @@
 
 /* Begin PBXBuildFile section */
 		9FD26D472B698FF800397CBE /* SDRDaxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D462B698FF800397CBE /* SDRDaxApp.swift */; };
-		9FD26D492B698FF800397CBE /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D482B698FF800397CBE /* ContentView.swift */; };
 		9FD26D4B2B698FF900397CBE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9FD26D4A2B698FF900397CBE /* Assets.xcassets */; };
 		9FD26D4E2B698FF900397CBE /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9FD26D4D2B698FF900397CBE /* Preview Assets.xcassets */; };
+		9FD26D562B69906D00397CBE /* SDRDaxCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D552B69906D00397CBE /* SDRDaxCore.swift */; };
+		9FD26D592B69911000397CBE /* ClientFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D582B69911000397CBE /* ClientFeature */; };
+		9FD26D5B2B69911000397CBE /* DirectFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D5A2B69911000397CBE /* DirectFeature */; };
+		9FD26D5D2B69911100397CBE /* FlexApiFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D5C2B69911100397CBE /* FlexApiFeature */; };
+		9FD26D5F2B69911100397CBE /* ListenerFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D5E2B69911100397CBE /* ListenerFeature */; };
+		9FD26D612B69911100397CBE /* LoginFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D602B69911100397CBE /* LoginFeature */; };
+		9FD26D632B69911100397CBE /* PickerFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D622B69911100397CBE /* PickerFeature */; };
+		9FD26D652B69911100397CBE /* SharedFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D642B69911100397CBE /* SharedFeature */; };
+		9FD26D672B69911100397CBE /* TcpFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D662B69911100397CBE /* TcpFeature */; };
+		9FD26D692B69911100397CBE /* UdpFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D682B69911100397CBE /* UdpFeature */; };
+		9FD26D6B2B69911100397CBE /* VitaFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D6A2B69911100397CBE /* VitaFeature */; };
+		9FD26D6D2B69911100397CBE /* XCGLogFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D6C2B69911100397CBE /* XCGLogFeature */; };
+		9FD26D6F2B69919700397CBE /* SDRDaxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D6E2B69919700397CBE /* SDRDaxView.swift */; };
+		9FD26D712B69921000397CBE /* TopButtonsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D702B69921000397CBE /* TopButtonsView.swift */; };
+		9FD26D7A2B6998B000397CBE /* DaxModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D732B6998B000397CBE /* DaxModel.swift */; };
+		9FD26D7B2B6998B000397CBE /* DaxIqView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D752B6998B000397CBE /* DaxIqView.swift */; };
+		9FD26D7C2B6998B000397CBE /* DaxTxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D762B6998B000397CBE /* DaxTxView.swift */; };
+		9FD26D7D2B6998B000397CBE /* DaxRxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D772B6998B000397CBE /* DaxRxView.swift */; };
+		9FD26D7E2B6998B000397CBE /* DaxMicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D782B6998B000397CBE /* DaxMicView.swift */; };
+		9FD26D7F2B6998B000397CBE /* DaxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D792B6998B000397CBE /* DaxView.swift */; };
+		9FD26D832B69D2DB00397CBE /* DaxRxAudioFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D822B69D2DB00397CBE /* DaxRxAudioFeature */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		9FD26D432B698FF800397CBE /* SDRDax.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SDRDax.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FD26D462B698FF800397CBE /* SDRDaxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDRDaxApp.swift; sourceTree = "<group>"; };
-		9FD26D482B698FF800397CBE /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		9FD26D4A2B698FF900397CBE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		9FD26D4D2B698FF900397CBE /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		9FD26D4F2B698FF900397CBE /* SDRDax.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SDRDax.entitlements; sourceTree = "<group>"; };
+		9FD26D552B69906D00397CBE /* SDRDaxCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDRDaxCore.swift; sourceTree = "<group>"; };
+		9FD26D6E2B69919700397CBE /* SDRDaxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDRDaxView.swift; sourceTree = "<group>"; };
+		9FD26D702B69921000397CBE /* TopButtonsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TopButtonsView.swift; sourceTree = "<group>"; };
+		9FD26D732B6998B000397CBE /* DaxModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxModel.swift; sourceTree = "<group>"; };
+		9FD26D752B6998B000397CBE /* DaxIqView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxIqView.swift; sourceTree = "<group>"; };
+		9FD26D762B6998B000397CBE /* DaxTxView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxTxView.swift; sourceTree = "<group>"; };
+		9FD26D772B6998B000397CBE /* DaxRxView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxRxView.swift; sourceTree = "<group>"; };
+		9FD26D782B6998B000397CBE /* DaxMicView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxMicView.swift; sourceTree = "<group>"; };
+		9FD26D792B6998B000397CBE /* DaxView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxView.swift; sourceTree = "<group>"; };
+		9FD26D802B69D19800397CBE /* SDRApiFeatures */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SDRApiFeatures; path = ../Packages/SDRApiFeatures; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -27,6 +56,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9FD26D5D2B69911100397CBE /* FlexApiFeature in Frameworks */,
+				9FD26D5F2B69911100397CBE /* ListenerFeature in Frameworks */,
+				9FD26D692B69911100397CBE /* UdpFeature in Frameworks */,
+				9FD26D6D2B69911100397CBE /* XCGLogFeature in Frameworks */,
+				9FD26D612B69911100397CBE /* LoginFeature in Frameworks */,
+				9FD26D632B69911100397CBE /* PickerFeature in Frameworks */,
+				9FD26D5B2B69911000397CBE /* DirectFeature in Frameworks */,
+				9FD26D672B69911100397CBE /* TcpFeature in Frameworks */,
+				9FD26D6B2B69911100397CBE /* VitaFeature in Frameworks */,
+				9FD26D592B69911000397CBE /* ClientFeature in Frameworks */,
+				9FD26D832B69D2DB00397CBE /* DaxRxAudioFeature in Frameworks */,
+				9FD26D652B69911100397CBE /* SharedFeature in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -36,8 +77,10 @@
 		9FD26D3A2B698FF800397CBE = {
 			isa = PBXGroup;
 			children = (
+				9FD26D802B69D19800397CBE /* SDRApiFeatures */,
 				9FD26D452B698FF800397CBE /* SDRDax */,
 				9FD26D442B698FF800397CBE /* Products */,
+				9FD26D812B69D2DB00397CBE /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -52,11 +95,14 @@
 		9FD26D452B698FF800397CBE /* SDRDax */ = {
 			isa = PBXGroup;
 			children = (
-				9FD26D462B698FF800397CBE /* SDRDaxApp.swift */,
-				9FD26D482B698FF800397CBE /* ContentView.swift */,
 				9FD26D4A2B698FF900397CBE /* Assets.xcassets */,
-				9FD26D4F2B698FF900397CBE /* SDRDax.entitlements */,
+				9FD26D722B6998B000397CBE /* DaxPanel */,
 				9FD26D4C2B698FF900397CBE /* Preview Content */,
+				9FD26D4F2B698FF900397CBE /* SDRDax.entitlements */,
+				9FD26D462B698FF800397CBE /* SDRDaxApp.swift */,
+				9FD26D552B69906D00397CBE /* SDRDaxCore.swift */,
+				9FD26D6E2B69919700397CBE /* SDRDaxView.swift */,
+				9FD26D702B69921000397CBE /* TopButtonsView.swift */,
 			);
 			path = SDRDax;
 			sourceTree = "<group>";
@@ -67,6 +113,34 @@
 				9FD26D4D2B698FF900397CBE /* Preview Assets.xcassets */,
 			);
 			path = "Preview Content";
+			sourceTree = "<group>";
+		};
+		9FD26D722B6998B000397CBE /* DaxPanel */ = {
+			isa = PBXGroup;
+			children = (
+				9FD26D732B6998B000397CBE /* DaxModel.swift */,
+				9FD26D742B6998B000397CBE /* Subviews */,
+				9FD26D792B6998B000397CBE /* DaxView.swift */,
+			);
+			path = DaxPanel;
+			sourceTree = "<group>";
+		};
+		9FD26D742B6998B000397CBE /* Subviews */ = {
+			isa = PBXGroup;
+			children = (
+				9FD26D752B6998B000397CBE /* DaxIqView.swift */,
+				9FD26D762B6998B000397CBE /* DaxTxView.swift */,
+				9FD26D772B6998B000397CBE /* DaxRxView.swift */,
+				9FD26D782B6998B000397CBE /* DaxMicView.swift */,
+			);
+			path = Subviews;
+			sourceTree = "<group>";
+		};
+		9FD26D812B69D2DB00397CBE /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -85,6 +159,20 @@
 			dependencies = (
 			);
 			name = SDRDax;
+			packageProductDependencies = (
+				9FD26D582B69911000397CBE /* ClientFeature */,
+				9FD26D5A2B69911000397CBE /* DirectFeature */,
+				9FD26D5C2B69911100397CBE /* FlexApiFeature */,
+				9FD26D5E2B69911100397CBE /* ListenerFeature */,
+				9FD26D602B69911100397CBE /* LoginFeature */,
+				9FD26D622B69911100397CBE /* PickerFeature */,
+				9FD26D642B69911100397CBE /* SharedFeature */,
+				9FD26D662B69911100397CBE /* TcpFeature */,
+				9FD26D682B69911100397CBE /* UdpFeature */,
+				9FD26D6A2B69911100397CBE /* VitaFeature */,
+				9FD26D6C2B69911100397CBE /* XCGLogFeature */,
+				9FD26D822B69D2DB00397CBE /* DaxRxAudioFeature */,
+			);
 			productName = SDRDax;
 			productReference = 9FD26D432B698FF800397CBE /* SDRDax.app */;
 			productType = "com.apple.product-type.application";
@@ -113,6 +201,9 @@
 				Base,
 			);
 			mainGroup = 9FD26D3A2B698FF800397CBE;
+			packageReferences = (
+				9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */,
+			);
 			productRefGroup = 9FD26D442B698FF800397CBE /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -139,8 +230,16 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				9FD26D492B698FF800397CBE /* ContentView.swift in Sources */,
+				9FD26D6F2B69919700397CBE /* SDRDaxView.swift in Sources */,
+				9FD26D7E2B6998B000397CBE /* DaxMicView.swift in Sources */,
+				9FD26D7F2B6998B000397CBE /* DaxView.swift in Sources */,
+				9FD26D7C2B6998B000397CBE /* DaxTxView.swift in Sources */,
+				9FD26D562B69906D00397CBE /* SDRDaxCore.swift in Sources */,
+				9FD26D7B2B6998B000397CBE /* DaxIqView.swift in Sources */,
+				9FD26D7D2B6998B000397CBE /* DaxRxView.swift in Sources */,
+				9FD26D7A2B6998B000397CBE /* DaxModel.swift in Sources */,
 				9FD26D472B698FF800397CBE /* SDRDaxApp.swift in Sources */,
+				9FD26D712B69921000397CBE /* TopButtonsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -273,17 +372,19 @@
 				CODE_SIGN_ENTITLEMENTS = SDRDax/SDRDax.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"SDRDax/Preview Content\"";
 				DEVELOPMENT_TEAM = EE5B8TYXGA;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.k3tzr.SDRDax;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -300,17 +401,19 @@
 				CODE_SIGN_ENTITLEMENTS = SDRDax/SDRDax.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 2;
 				DEVELOPMENT_ASSET_PATHS = "\"SDRDax/Preview Content\"";
 				DEVELOPMENT_TEAM = EE5B8TYXGA;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
+				MACOSX_DEPLOYMENT_TARGET = 14.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = net.k3tzr.SDRDax;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -341,6 +444,79 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/K3TZR/SDRApiFeatures.git";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		9FD26D582B69911000397CBE /* ClientFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = ClientFeature;
+		};
+		9FD26D5A2B69911000397CBE /* DirectFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = DirectFeature;
+		};
+		9FD26D5C2B69911100397CBE /* FlexApiFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = FlexApiFeature;
+		};
+		9FD26D5E2B69911100397CBE /* ListenerFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = ListenerFeature;
+		};
+		9FD26D602B69911100397CBE /* LoginFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = LoginFeature;
+		};
+		9FD26D622B69911100397CBE /* PickerFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = PickerFeature;
+		};
+		9FD26D642B69911100397CBE /* SharedFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = SharedFeature;
+		};
+		9FD26D662B69911100397CBE /* TcpFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = TcpFeature;
+		};
+		9FD26D682B69911100397CBE /* UdpFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = UdpFeature;
+		};
+		9FD26D6A2B69911100397CBE /* VitaFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = VitaFeature;
+		};
+		9FD26D6C2B69911100397CBE /* XCGLogFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
+			productName = XCGLogFeature;
+		};
+		9FD26D822B69D2DB00397CBE /* DaxRxAudioFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DaxRxAudioFeature;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 9FD26D3B2B698FF800397CBE /* Project object */;
 }
