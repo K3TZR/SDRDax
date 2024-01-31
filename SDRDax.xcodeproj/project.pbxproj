@@ -49,6 +49,7 @@
 		9FD26D782B6998B000397CBE /* DaxMicView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxMicView.swift; sourceTree = "<group>"; };
 		9FD26D792B6998B000397CBE /* DaxView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxView.swift; sourceTree = "<group>"; };
 		9FD26D802B69D19800397CBE /* SDRApiFeatures */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = SDRApiFeatures; path = ../Packages/SDRApiFeatures; sourceTree = "<group>"; };
+		9FD26D842B69EB4500397CBE /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -77,6 +78,7 @@
 		9FD26D3A2B698FF800397CBE = {
 			isa = PBXGroup;
 			children = (
+				9FD26D842B69EB4500397CBE /* README.md */,
 				9FD26D802B69D19800397CBE /* SDRApiFeatures */,
 				9FD26D452B698FF800397CBE /* SDRDax */,
 				9FD26D442B698FF800397CBE /* Products */,
