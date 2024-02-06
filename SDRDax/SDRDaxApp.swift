@@ -41,8 +41,8 @@ struct SDRDaxApp: App {
   
     var body: some Scene {
         WindowGroup("SDRDax  (v" + Version().string + ")") {
-          SDRDaxView(store: Store(initialState: SDRDax.State()) {
-            SDRDax()
+          SDRDaxView(store: Store(initialState: SDRDaxCore.State()) {
+            SDRDaxCore()
           })
           .environment(apiModel)
           .environment(listenerModel)

@@ -11,7 +11,7 @@ import SwiftUI
 import SharedFeature
 
 public struct TopButtonsView: View {
-  @Bindable var store: StoreOf<SDRDax>
+  @Bindable var store: StoreOf<SDRDaxCore>
     
   var buttonText: String {
     switch store.connectionState {
@@ -60,11 +60,11 @@ public struct TopButtonsView: View {
   }
 }
 
-#Preview {
-  Grid(alignment: .leading, horizontalSpacing: 20) {
-    TopButtonsView(store: Store(initialState: SDRDax.State(daxPanelOptions: DaxPanelOptions(rawValue: 0))) {
-      SDRDax()
-    })
-  }
-  .frame(width: 320)
-}
+//#Preview {
+//  Grid(alignment: .leading, horizontalSpacing: 20) {
+//    TopButtonsView(store: Store(initialState: SDRDaxCore.State(daxPanelOptions: DaxPanelOptions(rawValue: 0))) {
+//      SDRDaxCore()
+//    })
+//  }
+//  .frame(width: 320)
+//}

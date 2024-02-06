@@ -20,7 +20,7 @@ import SharedFeature
 import XCGLogFeature
 
 @Reducer
-public struct SDRDax {
+public struct SDRDaxCore {
   
   public init() {}
   
@@ -28,17 +28,15 @@ public struct SDRDax {
   // MARK: - State
   
   @ObservableState
-  public struct State {
+  public struct State: Equatable {
+    public static func == (lhs: SDRDaxCore.State, rhs: SDRDaxCore.State) -> Bool {
+      lhs.daxPanelOptions == rhs.daxPanelOptions
+    }
+    
     let AppDefaults = UserDefaults.standard
     
     // persistent
-    var alertOnError = true                         {didSet { AppDefaults.set(alertOnError, forKey: "alertOnError")}}
     var daxPanelOptions: DaxPanelOptions = []       {didSet { AppDefaults.set(daxPanelOptions.rawValue, forKey: "daxPanelOptions")}}
-    var daxMicSetting = DaxSetting(channel: 0)      {didSet { UserDefaults.saveStructToSettings("daxMicSetting", daxMicSetting, defaults: UserDefaults.standard)}}
-    var daxRxSetting = DaxSetting(channel: 0)       {didSet { UserDefaults.saveStructToSettings("daxRxSetting", daxRxSetting, defaults: UserDefaults.standard)}}
-    var daxTxSetting = DaxSetting(channel: 0)       {didSet { UserDefaults.saveStructToSettings("daxTxSetting", daxTxSetting, defaults: UserDefaults.standard)}}
-    
-    
     var directEnabled = false                       {didSet { AppDefaults.set(directEnabled, forKey: "directEnabled")}}
     var directGuiIp = ""                            {didSet { AppDefaults.set(directGuiIp, forKey: "directGuiIp")}}
     var directNonGuiIp = ""                         {didSet { AppDefaults.set(directNonGuiIp, forKey: "directNonGuiIp")}}
@@ -59,6 +57,87 @@ public struct SDRDax {
     // non-persistent
     var initialized = false
     var connectionState: ConnectionState = .disconnected
+        
+    var daxIqs: IdentifiedArrayOf<DaxIqCore.State> = [
+      DaxIqCore.State(
+        id: UUID(),
+        enabled: false,
+        channel: 0,
+        deviceID:  nil,
+        gain: 0.5,
+        status: "off",
+        sampleRate: 24_000
+      ),
+      DaxIqCore.State(
+        id: UUID(),
+        enabled: false,
+        channel: 1,
+        deviceID: nil,
+        gain: 0.8,
+        status: "off",
+        sampleRate: 48_000
+      ),
+      DaxIqCore.State(
+        id: UUID(),
+        enabled: false,
+        channel: 2,
+        deviceID: nil,
+        gain: 0.8,
+        status: "off",
+        sampleRate: 96_000
+      ),
+      DaxIqCore.State(
+        id: UUID(),
+        enabled: false,
+        channel: 3,
+        deviceID: nil,
+        gain: 0.8,
+        status: "off",
+        sampleRate: 192_000
+      ),
+
+    ]
+    var daxMic = DaxDevice(channel: 0)
+    var daxRxs: IdentifiedArrayOf<DaxRxCore.State> = [
+      DaxRxCore.State(
+        id: UUID(),
+        enabled: false,
+        channel: 0,
+        deviceID:  nil,
+        gain: 0.5,
+        status: "off",
+        sampleRate: 24_000
+      ),
+      DaxRxCore.State(
+        id: UUID(),
+        enabled: false,
+        channel: 1,
+        deviceID: nil,
+        gain: 0.8,
+        status: "off",
+        sampleRate: 24_000
+      ),
+      DaxRxCore.State(
+        id: UUID(),
+        enabled: false,
+        channel: 2,
+        deviceID: nil,
+        gain: 0.8,
+        status: "off",
+        sampleRate: 24_000
+      ),
+      DaxRxCore.State(
+        id: UUID(),
+        enabled: false,
+        channel: 3,
+        deviceID: nil,
+        gain: 0.8,
+        status: "off",
+        sampleRate: 24_000
+      ),
+    ]
+    var daxTx = DaxDevice(channel: 0)
+
     //    var rxAVAudioPlayer = RxAVAudioPlayer()
     
     @Presents var showAlert: AlertState<Action.Alert>?
@@ -77,6 +156,10 @@ public struct SDRDax {
     
     case connectButtonTapped
     
+    // subview actions
+    case daxIqs(IdentifiedActionOf<DaxIqCore>)
+    case daxRxs(IdentifiedActionOf<DaxRxCore>)
+    
     // secondary actions
     case multiflexStatus(String)
     case connect(String, UInt32?)
@@ -85,7 +168,6 @@ public struct SDRDax {
     case showAlert(Alert,String)
     case showClientSheet(String, IdentifiedArrayOf<GuiClient>)
     case showDirectSheet
-    case showLogAlert(LogEntry)
     case showLoginSheet
     case showPickerSheet
     
@@ -111,7 +193,16 @@ public struct SDRDax {
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
-    
+    EmptyReducer()
+      .forEach(\.daxRxs, action: \.daxRxs) {
+        DaxRxCore()
+      }
+
+    EmptyReducer()
+      .forEach(\.daxIqs, action: \.daxIqs) {
+        DaxIqCore()
+      }
+
     Reduce { state, action in
       switch action {
         
@@ -120,15 +211,48 @@ public struct SDRDax {
         
       case .onAppear:
         // perform initialization
-        return .merge(
-          initState(&state),
-          subscribeToLogAlerts()
-        )
+        return initState(&state)
         
       case .connectButtonTapped:
         // attempt to connect to the selected radio
         return connectionStartStop(state)
                 
+//      case let .daxRxChannelChanged(newValue):
+//        state.daxRxSetting.channel = newValue
+//        print("----->>>>> daxRxChannel = \(newValue)")
+//        return .none
+//        
+//      case let .daxRxGainChanged(newValue):
+//        state.daxRxSetting.gain = newValue
+//        print("----->>>>> daxRxGain = \(newValue)")
+//        return .run {[state] _ in
+//          await DaxModel.shared.setGain(channel: state.daxRxSetting.channel, gain: state.daxRxSetting.gain)
+//        }
+//
+//      case let .daxRxDeviceIDChanged(newValue):
+//        state.daxRxSetting.deviceID = newValue
+//        print("----->>>>> daxRxDeviceID = \(newValue)")
+//        return .run {[state] _ in
+//          if newValue != nil {
+//            print("----->>>>> New AudioDeviceID", newValue!)
+//            await DaxModel.shared.setDevice(state.daxRxSetting.channel, newValue!)
+//            
+//          } else {
+//            print("----->>>>> New AudioDeviceID", "none")
+//          }
+//        }
+//
+//      case let .daxRxEnabledChanged(newValue):
+//        state.daxRxSetting.enabled = newValue
+//        print("----->>>>> daxRxEnabled = \(newValue)")
+//        return .run {[state] _ in
+//          if newValue {
+//            await DaxModel.shared.startDaxRxAudio(state.daxRxSetting.deviceID!, state.daxRxSetting.channel)
+//          } else {
+//            await DaxModel.shared.stopDaxRxAudio(state.daxRxSetting.channel)
+//          }
+//        }
+        
         // ----------------------------------------------------------------------------
         // MARK: - Root Binding Actions
         
@@ -151,7 +275,20 @@ public struct SDRDax {
         state.directEnabled = false
         return listenerStartStop(&state)
         
+      case .binding(\.daxMic):
+        print("----->>>>> binding .daxMic")
+        return .none
+
+      case .binding(\.daxPanelOptions):
+        print("----->>>>> binding .daxPanelOptions")
+        return .none
+
+      case .binding(\.daxTx):
+        print("----->>>>> binding .daxTx")
+        return .none
+
       case .binding(_):
+        print("----->>>>> binding ????")
         return .none
         
         // ----------------------------------------------------------------------------
@@ -203,10 +340,6 @@ public struct SDRDax {
         
       case .showDirectSheet:
         state.showDirect = DirectFeature.State(ip: state.isGui ? state.directGuiIp : state.directNonGuiIp)
-        return .none
-        
-      case let .showLogAlert(logEntry):
-        state.showAlert = AlertState(title: TextState("\(logEntry.level == .warning ? "A Warning" : "An Error") was logged:"), message: TextState(logEntry.msg))
         return .none
         
       case .showLoginSheet:
@@ -285,9 +418,59 @@ public struct SDRDax {
         
       case .picker(_):
         return .none
+        
+        // ----------------------------------------------------------------------------
+        // MARK: - Dax RX Actions
+        
+      case let .daxRxs(.element(x, .binding(\.channel))):
+        print("----->>>>> .daxRxs, channel = \(state.daxRxs[id: x]?.channel)")
+        return .none
+
+      case let .daxRxs(.element(x, .binding(\.deviceID))):
+        print("----->>>>> .daxRxs, deviceID = \(state.daxRxs[id: x]?.deviceID)")
+        return .none
+
+      case let .daxRxs(.element(x, .binding(\.enabled))):
+        print("----->>>>> .daxRxs, enabled = \(state.daxRxs[id: x]?.enabled)")
+        return .none
+
+      case let .daxRxs(.element(x, .binding(\.gain))):
+        print("----->>>>> .daxRxs, gain = \(state.daxRxs[id: x]?.gain)")
+        return .none
+
+      case .daxRxs(_):
+        print("----->>>>> .daxRxs ????")
+        return .none
+              
+        // ----------------------------------------------------------------------------
+        // MARK: - Dax RX Actions
+        
+      case let .daxIqs(.element(x, .binding(\.channel))):
+        print("----->>>>> .daxRxs, channel = \(state.daxIqs[id: x]?.channel)")
+        return .none
+
+      case let .daxIqs(.element(x, .binding(\.deviceID))):
+        print("----->>>>> .daxRxs, deviceID = \(state.daxIqs[id: x]?.deviceID)")
+        return .none
+
+      case let .daxIqs(.element(x, .binding(\.enabled))):
+        print("----->>>>> .daxRxs, enabled = \(state.daxIqs[id: x]?.enabled)")
+        return .none
+
+      case let .daxIqs(.element(x, .binding(\.gain))):
+        print("----->>>>> .daxRxs, gain = \(state.daxIqs[id: x]?.gain)")
+        return .none
+
+      case let .daxIqs(.element(x, .binding(\.sampleRate))):
+        print("----->>>>> .daxRxs, gain = \(state.daxIqs[id: x]?.sampleRate)")
+        return .none
+
+      case .daxIqs(_):
+        print("----->>>>> .daxIqs ????")
+        return .none
       }
     }
-    
+
     // ----------------------------------------------------------------------------
     // MARK: - Sheet / Alert reducer integration
     
@@ -301,7 +484,7 @@ public struct SDRDax {
   // ----------------------------------------------------------------------------
   // MARK: - Private effect methods
   
-  private func connect(_ state: State, _ selection: String, _ disconnectHandle: UInt32?) -> Effect<SDRDax.Action> {
+  private func connect(_ state: State, _ selection: String, _ disconnectHandle: UInt32?) -> Effect<SDRDaxCore.Action> {
     ListenerModel.shared.setActive(state.isGui, selection, state.directEnabled)
     return .run {
       // attempt to connect to the selected Radio / Station
@@ -322,7 +505,7 @@ public struct SDRDax {
     }
   }
   
-  private func connectionStartStop(_ state: State)  -> Effect<SDRDax.Action> {
+  private func connectionStartStop(_ state: State) -> Effect<SDRDaxCore.Action> {
     if state.connectionState == .connected {
       // ----- STOPPING -----
       //      MessagesModel.shared.stop(state.clearOnStop)
@@ -376,7 +559,7 @@ public struct SDRDax {
     }
   }
   
-  private func connectionStatus(_ state: inout State, _ status: ConnectionState) -> Effect<SDRDax.Action> {
+  private func connectionStatus(_ state: inout State, _ status: ConnectionState) -> Effect<SDRDaxCore.Action> {
     
     switch status {
     case .connected:
@@ -406,14 +589,14 @@ public struct SDRDax {
     return .none
   }
   
-  private func initState(_ state: inout State) -> Effect<SDRDax.Action> {
+  private func initState(_ state: inout State) -> Effect<SDRDaxCore.Action> {
     if state.initialized == false {
       
-      state.alertOnError = UserDefaults.standard.bool(forKey: "alertOnError")
+//      state.alertOnError = UserDefaults.standard.bool(forKey: "alertOnError")
       state.daxPanelOptions = DaxPanelOptions(rawValue: UInt8(UserDefaults.standard.integer(forKey: "daxPanelOptions")))
-      state.daxMicSetting = UserDefaults.getStructFromSettings("daxMicSetting", defaults: UserDefaults.standard) ?? DaxSetting(channel: 1) as DaxSetting
-      state.daxRxSetting = UserDefaults.getStructFromSettings("daxRxSetting", defaults: UserDefaults.standard) ?? DaxSetting(channel: 1) as DaxSetting
-      state.daxTxSetting = UserDefaults.getStructFromSettings("daxTxSetting", defaults: UserDefaults.standard) ?? DaxSetting(channel: 1) as DaxSetting
+//      state.daxMicSetting = UserDefaults.getStructFromSettings("daxMicSetting", defaults: UserDefaults.standard) ?? DaxSetting(channel: 1) as DaxSetting
+//      state.daxRxSetting = UserDefaults.getStructFromSettings("daxRxSetting", defaults: UserDefaults.standard) ?? DaxSetting(channel: 1) as DaxSetting
+//      state.daxTxSetting = UserDefaults.getStructFromSettings("daxTxSetting", defaults: UserDefaults.standard) ?? DaxSetting(channel: 1) as DaxSetting
       state.guiDefault = UserDefaults.standard.string(forKey: "guiDefault") ?? nil
       state.isGui = UserDefaults.standard.bool(forKey: "isGui")
       state.directEnabled = UserDefaults.standard.bool(forKey: "directEnabled")
@@ -442,7 +625,7 @@ public struct SDRDax {
   }
   
   // start/stop listener, as needed
-  private func listenerStartStop(_ state: inout State) -> Effect<SDRDax.Action> {
+  private func listenerStartStop(_ state: inout State) -> Effect<SDRDaxCore.Action> {
     // start/stop local mode
     ListenerModel.shared.localMode(state.localEnabled)
     
@@ -473,7 +656,7 @@ public struct SDRDax {
     }
   }
   
-  private func multiflexStatus(_ state: State, _ selection: String) -> Effect<SDRDax.Action> {
+  private func multiflexStatus(_ state: State, _ selection: String) -> Effect<SDRDaxCore.Action> {
     return .run {
       if state.isGui {
         // GUI selection
@@ -498,7 +681,7 @@ public struct SDRDax {
     }
   }
   
-  private func smartlinkUserLogin(_ state: inout State, _ user: String, _ password: String) -> Effect<SDRDax.Action> {
+  private func smartlinkUserLogin(_ state: inout State, _ user: String, _ password: String) -> Effect<SDRDaxCore.Action> {
     state.smartlinkUser = user
     return .run {
       let tokens = await ListenerModel.shared.smartlinkStart(user, password)
@@ -506,14 +689,14 @@ public struct SDRDax {
     }
   }
   
-  private func subscribeToLogAlerts() ->  Effect<SDRDax.Action>  {
-    return .run {
-      for await logEntry in logAlerts {
-        // a Warning or Error has been logged.
-        await $0(.showLogAlert(logEntry))
-      }
-    }
-  }
+//  private func subscribeToLogAlerts() ->  Effect<SDRDaxCore.Action>  {
+//    return .run {
+//      for await logEntry in logAlerts {
+//        // a Warning or Error has been logged.
+//        await $0(.showLogAlert(logEntry))
+//      }
+//    }
+//  }
 }
 
 // ----------------------------------------------------------------------------

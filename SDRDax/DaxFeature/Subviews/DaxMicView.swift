@@ -1,0 +1,72 @@
+//
+//  SwiftUIView.swift
+//
+//
+//  Created by Douglas Adams on 11/29/23.
+//
+
+import AVFoundation
+import ComposableArchitecture
+import SwiftUI
+
+import SharedFeature
+
+struct DaxMicView: View {
+  @Bindable var store: StoreOf<SDRDaxCore>
+  let devices: [AudioDevice]
+  
+  @State var showDetails = true
+
+  var body: some View {
+    
+    GroupBox {
+      VStack(alignment: .leading) {
+        HStack(spacing: 20) {
+          Image(systemName: showDetails ? "chevron.down" : "chevron.right").font(.title2)
+            .onTapGesture {
+              showDetails.toggle()
+            }
+            .help(showDetails ? "Hide Details" : "Show Details")
+          Toggle(isOn: $store.daxMic.enabled,
+                 label: { Text("Enabled") }).disabled(store.daxMic.deviceID == nil)
+          Text("Status")
+          Text(DaxModel.shared.status).frame(width: 110)
+        }.frame(width: 320)
+        
+        if showDetails{
+          Grid(alignment: .topLeading, horizontalSpacing: 10) {
+            
+            GridRow {
+              Text("Output Device")
+              Picker("", selection: $store.daxMic.deviceID) {
+                Text("None").tag(nil as AudioDeviceID?)
+                ForEach(devices, id: \.id) {
+                  if $0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
+                }
+              }
+              .labelsHidden()
+            }
+            
+            GridRow {
+              HStack {
+                Text("Gain")
+                Text("\(Int(store.daxMic.gain * 100))").frame(width: 40, alignment: .trailing)
+              }
+              Slider(value: $store.daxMic.gain, in: 0...1, label: {
+              })
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+
+
+//#Preview {
+//  DaxMicView(store: Store(initialState: DaxMicCore.State() {
+//    DaxMicCore()
+//  }, devices: [AudioDevice]())
+//    .frame(width: 320)
+//}
