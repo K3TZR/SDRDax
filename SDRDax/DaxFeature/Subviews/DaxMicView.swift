@@ -15,25 +15,23 @@ struct DaxMicView: View {
   @Bindable var store: StoreOf<SDRDaxCore>
   let devices: [AudioDevice]
   
-  @State var showDetails = true
-
   var body: some View {
     
     GroupBox {
       VStack(alignment: .leading) {
-        HStack(spacing: 20) {
-          Image(systemName: showDetails ? "chevron.down" : "chevron.right").font(.title2)
+        HStack(spacing: 10) {
+          Image(systemName: store.daxMic.showDetails ? "chevron.down" : "chevron.right").font(.title2)
             .onTapGesture {
-              showDetails.toggle()
-            }
-            .help(showDetails ? "Hide Details" : "Show Details")
-          Toggle(isOn: $store.daxMic.enabled,
-                 label: { Text("Enabled") }).disabled(store.daxMic.deviceID == nil)
+              store.daxMic.showDetails.toggle()
+            }.frame(width: 40)
+            .help("Show / Hide Details")
+          Toggle("MIC", isOn: $store.daxMic.enabled).toggleStyle(.button)
+          Spacer()
           Text("Status")
-          Text(DaxModel.shared.status).frame(width: 110)
+          Text(store.daxMic.status).frame(width: 150)
         }.frame(width: 320)
-        
-        if showDetails{
+
+        if store.daxMic.showDetails{
           Grid(alignment: .topLeading, horizontalSpacing: 10) {
             
             GridRow {

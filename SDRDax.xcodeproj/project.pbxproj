@@ -29,10 +29,10 @@
 		9FD26D7C2B6998B000397CBE /* DaxTxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D762B6998B000397CBE /* DaxTxView.swift */; };
 		9FD26D7D2B6998B000397CBE /* DaxRxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D772B6998B000397CBE /* DaxRxView.swift */; };
 		9FD26D7E2B6998B000397CBE /* DaxMicView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D782B6998B000397CBE /* DaxMicView.swift */; };
-		9FD26D832B69D2DB00397CBE /* DaxRxAudioFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D822B69D2DB00397CBE /* DaxRxAudioFeature */; };
 		9FD26D872B6ABC9D00397CBE /* LevelIndicatorView in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D862B6ABC9D00397CBE /* LevelIndicatorView */; };
 		9FD26D8A2B6E95CD00397CBE /* DaxRxCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D892B6E95CD00397CBE /* DaxRxCore.swift */; };
 		9FD26D922B6EA9CF00397CBE /* DaxIqCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D912B6EA9CF00397CBE /* DaxIqCore.swift */; };
+		9FD26D942B74748C00397CBE /* DaxAudioFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D932B74748C00397CBE /* DaxAudioFeature */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -66,13 +66,13 @@
 				9FD26D692B69911100397CBE /* UdpFeature in Frameworks */,
 				9FD26D6D2B69911100397CBE /* XCGLogFeature in Frameworks */,
 				9FD26D872B6ABC9D00397CBE /* LevelIndicatorView in Frameworks */,
+				9FD26D942B74748C00397CBE /* DaxAudioFeature in Frameworks */,
 				9FD26D612B69911100397CBE /* LoginFeature in Frameworks */,
 				9FD26D632B69911100397CBE /* PickerFeature in Frameworks */,
 				9FD26D5B2B69911000397CBE /* DirectFeature in Frameworks */,
 				9FD26D672B69911100397CBE /* TcpFeature in Frameworks */,
 				9FD26D6B2B69911100397CBE /* VitaFeature in Frameworks */,
 				9FD26D592B69911000397CBE /* ClientFeature in Frameworks */,
-				9FD26D832B69D2DB00397CBE /* DaxRxAudioFeature in Frameworks */,
 				9FD26D652B69911100397CBE /* SharedFeature in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -180,8 +180,8 @@
 				9FD26D682B69911100397CBE /* UdpFeature */,
 				9FD26D6A2B69911100397CBE /* VitaFeature */,
 				9FD26D6C2B69911100397CBE /* XCGLogFeature */,
-				9FD26D822B69D2DB00397CBE /* DaxRxAudioFeature */,
 				9FD26D862B6ABC9D00397CBE /* LevelIndicatorView */,
+				9FD26D932B74748C00397CBE /* DaxAudioFeature */,
 			);
 			productName = SDRDax;
 			productReference = 9FD26D432B698FF800397CBE /* SDRDax.app */;
@@ -532,14 +532,14 @@
 			package = 9FD26D572B69911000397CBE /* XCRemoteSwiftPackageReference "SDRApiFeatures" */;
 			productName = XCGLogFeature;
 		};
-		9FD26D822B69D2DB00397CBE /* DaxRxAudioFeature */ = {
-			isa = XCSwiftPackageProductDependency;
-			productName = DaxRxAudioFeature;
-		};
 		9FD26D862B6ABC9D00397CBE /* LevelIndicatorView */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 9FD26D852B6ABC9D00397CBE /* XCRemoteSwiftPackageReference "CustomControls" */;
 			productName = LevelIndicatorView;
+		};
+		9FD26D932B74748C00397CBE /* DaxAudioFeature */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = DaxAudioFeature;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

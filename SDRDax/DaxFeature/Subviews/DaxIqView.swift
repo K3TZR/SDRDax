@@ -9,6 +9,7 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
+import DaxAudioFeature
 import LevelIndicatorView
 import SharedFeature
 
@@ -16,7 +17,6 @@ struct DaxIqView: View {
   @Bindable var store: StoreOf<DaxIqCore>
   let devices: [AudioDevice]
   
-  private let channels = [0,1,2,3,4,5,6,7,8]
   private let rates = [24_000, 48_000, 96_000, 192_000]
   @State var showDetails = true
   
@@ -24,47 +24,40 @@ struct DaxIqView: View {
 
     GroupBox {
       VStack(alignment: .leading) {
-        HStack(spacing: 20) {
-          Image(systemName: showDetails ? "chevron.down" : "chevron.right").font(.title2)
+        HStack(spacing: 10) {
+          Image(systemName: store.showDetails ? "chevron.down" : "chevron.right").font(.title2)
             .onTapGesture {
-              showDetails.toggle()
-            }
-            .help(showDetails ? "Hide Details" : "Show Details")
-
-          Toggle(isOn: $store.enabled,
-                 label: { Text("Enabled") }).disabled(store.deviceID == nil || store.channel == 0)
-
+              store.showDetails.toggle()
+            }.frame(width: 40)
+            .help("Show / Hide Details")
+          Toggle("Iq\(store.channel)", isOn: $store.isOn).toggleStyle(.button).disabled(store.device == nil)
+          Spacer()
           Text("Status")
-          Text(DaxModel.shared.status).frame(width: 110)
+          Text(store.status).frame(width: 150)
         }.frame(width: 320)
-        
+
         if showDetails {
           Grid(alignment: .leading, horizontalSpacing: 10) {
-            Divider()
-            
             GridRow {
-              Picker("Channel", selection: $store.channel) {
-                ForEach(channels, id: \.self) {
-                  Text($0 == 0 ? "none" : "\($0)").tag($0)
-                }
-              }.frame(width: 145)
-              
-              Picker("Rate", selection: $store.sampleRate) {
+              Text("Rate")
+              Picker("", selection: $store.sampleRate) {
                 ForEach(rates, id: \.self) {
                   Text("\($0)").tag($0)
                 }
-              }.frame(width: 150)
+              }
+              .labelsHidden()
+              .frame(width: 150)
             }
             
             GridRow {
-              Picker("Output Device", selection: $store.deviceID) {
+              Text("Output Device")
+              Picker("", selection: $store.device) {
                 Text("none").tag(nil as AudioDeviceID?)
                 ForEach(devices, id: \.id) {
                   if $0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
                 }
               }
-              .gridCellColumns(2)
-//              .labelsHidden()
+              .labelsHidden()
             }
 
             GridRow {
@@ -76,7 +69,7 @@ struct DaxIqView: View {
               })
             }
           }
-          LevelIndicatorView(levels: DaxModel.shared.daxRxAudioPlayer?.levels ?? SignalLevel(rms: -40, peak: -40), type: .dax)
+//          LevelIndicatorView(levels: store.audioPlayer.levels, type: .dax)
         }
       }
     }
@@ -86,7 +79,7 @@ struct DaxIqView: View {
 
 #Preview {
   DaxIqView(
-    store: Store(initialState: DaxIqCore.State(id: UUID())) {
+    store: Store(initialState: DaxIqCore.State(channel: 1)) {
       DaxIqCore()
     }, devices: AudioDevice.getDevices()
   )

@@ -35,7 +35,7 @@ public struct TopButtonsView: View {
     HStack(spacing: 10) {
       // Connection initiation
       Button(buttonText) {
-        store.send(.connectButtonTapped)
+        store.send(.startStopButtonTapped)
       }
       .background(Color(.green).opacity(0.2))
       .frame(width: 60)

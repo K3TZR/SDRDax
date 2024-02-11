@@ -11,6 +11,7 @@ import ComposableArchitecture
 import Foundation
 
 import ClientFeature
+import DaxAudioFeature
 import DirectFeature
 import FlexApiFeature
 import ListenerFeature
@@ -54,86 +55,82 @@ public struct SDRDaxCore {
     var station = "SDRDax"                          {didSet { AppDefaults.set(station, forKey: "station")}}
     var useDefaultEnabled = false                   {didSet { AppDefaults.set(useDefaultEnabled, forKey: "useDefaultEnabled")}}
     
+
     // non-persistent
     var initialized = false
     var connectionState: ConnectionState = .disconnected
         
-    var daxIqs: IdentifiedArrayOf<DaxIqCore.State> = [
+    var daxIqStates: IdentifiedArrayOf<DaxIqCore.State> = [
       DaxIqCore.State(
-        id: UUID(),
-        enabled: false,
-        channel: 0,
-        deviceID:  nil,
-        gain: 0.5,
-        status: "off",
-        sampleRate: 24_000
-      ),
-      DaxIqCore.State(
-        id: UUID(),
-        enabled: false,
         channel: 1,
-        deviceID: nil,
-        gain: 0.8,
-        status: "off",
-        sampleRate: 48_000
+        device: nil,
+        gain: 0.5,
+        isOn: false,
+        sampleRate: 24_000,
+        showDetails: true
       ),
       DaxIqCore.State(
-        id: UUID(),
-        enabled: false,
         channel: 2,
-        deviceID: nil,
-        gain: 0.8,
-        status: "off",
-        sampleRate: 96_000
+        device: nil,
+        gain: 0.5,
+        isOn: false,
+        sampleRate: 24_000,
+        showDetails: true
       ),
       DaxIqCore.State(
-        id: UUID(),
-        enabled: false,
         channel: 3,
-        deviceID: nil,
-        gain: 0.8,
-        status: "off",
-        sampleRate: 192_000
+        device: nil,
+        gain: 0.5,
+        isOn: false,
+        sampleRate: 24_000,
+        showDetails: true
+      ),
+      DaxIqCore.State(
+        channel: 4,
+        device: nil,
+        gain: 0.5,
+        isOn: false,
+        sampleRate: 24_000,
+        showDetails: true
       ),
 
     ]
     var daxMic = DaxDevice(channel: 0)
-    var daxRxs: IdentifiedArrayOf<DaxRxCore.State> = [
+    
+    var daxRxDevices = [
+      DaxAudioPlayer(),
+      DaxAudioPlayer(),
+      DaxAudioPlayer(),
+      DaxAudioPlayer(),
+    ]
+    var daxRxStates: IdentifiedArrayOf<DaxRxCore.State> = [
       DaxRxCore.State(
-        id: UUID(),
-        enabled: false,
-        channel: 0,
-        deviceID:  nil,
-        gain: 0.5,
-        status: "off",
-        sampleRate: 24_000
-      ),
-      DaxRxCore.State(
-        id: UUID(),
-        enabled: false,
         channel: 1,
-        deviceID: nil,
-        gain: 0.8,
-        status: "off",
-        sampleRate: 24_000
+        device: nil,
+        gain: 0.5,
+        isOn: false,
+        showDetails: true
       ),
       DaxRxCore.State(
-        id: UUID(),
-        enabled: false,
         channel: 2,
-        deviceID: nil,
-        gain: 0.8,
-        status: "off",
-        sampleRate: 24_000
+        device: nil,
+        gain: 0.5,
+        isOn: false,
+        showDetails: true
       ),
       DaxRxCore.State(
-        id: UUID(),
-        enabled: false,
         channel: 3,
-        deviceID: nil,
-        gain: 0.8,
-        status: "off",
-        sampleRate: 24_000
+        device: nil,
+        gain: 0.5,
+        isOn: false,
+        showDetails: true
+      ),
+      DaxRxCore.State(
+        channel: 4,
+        device: nil,
+        gain: 0.5,
+        isOn: false,
+        showDetails: true
       ),
     ]
     var daxTx = DaxDevice(channel: 0)
@@ -154,11 +151,11 @@ public struct SDRDaxCore {
     case binding(BindingAction<State>)
     case onAppear
     
-    case connectButtonTapped
+    case startStopButtonTapped
     
     // subview actions
-    case daxIqs(IdentifiedActionOf<DaxIqCore>)
-    case daxRxs(IdentifiedActionOf<DaxRxCore>)
+    case daxIqStates(IdentifiedActionOf<DaxIqCore>)
+    case daxRxStates(IdentifiedActionOf<DaxRxCore>)
     
     // secondary actions
     case multiflexStatus(String)
@@ -194,12 +191,12 @@ public struct SDRDaxCore {
   public var body: some ReducerOf<Self> {
     BindingReducer()
     EmptyReducer()
-      .forEach(\.daxRxs, action: \.daxRxs) {
+      .forEach(\.daxRxStates, action: \.daxRxStates) {
         DaxRxCore()
       }
 
     EmptyReducer()
-      .forEach(\.daxIqs, action: \.daxIqs) {
+      .forEach(\.daxIqStates, action: \.daxIqStates) {
         DaxIqCore()
       }
 
@@ -213,9 +210,13 @@ public struct SDRDaxCore {
         // perform initialization
         return initState(&state)
         
-      case .connectButtonTapped:
+      case .startStopButtonTapped:
         // attempt to connect to the selected radio
-        return connectionStartStop(state)
+        if state.connectionState == .connected {
+          return connectionStop()
+        } else {
+          return connectionStart(state)
+        }
                 
 //      case let .daxRxChannelChanged(newValue):
 //        state.daxRxSetting.channel = newValue
@@ -269,11 +270,19 @@ public struct SDRDaxCore {
         
       case .binding(\.localEnabled):
         state.directEnabled = false
-        return listenerStartStop(&state)
+        if state.localEnabled {
+          return localListenerStart()
+        } else {
+          return localListenerStop()
+        }
         
       case .binding(\.smartlinkEnabled):
         state.directEnabled = false
-        return listenerStartStop(&state)
+        if state.smartlinkEnabled {
+          return smartlinkListenerStart(&state)
+        } else {
+          return smartlinkListenerStop()
+        }
         
       case .binding(\.daxMic):
         print("----->>>>> binding .daxMic")
@@ -304,7 +313,7 @@ public struct SDRDaxCore {
         
       case let .multiflexStatus(selection):
         // check for need to show Client view
-        return multiflexStatus(state, selection)
+        return multiflexConnectionStatus(state, selection)
         
       case let .saveTokens(tokens):
         if tokens.idToken != nil {
@@ -422,50 +431,66 @@ public struct SDRDaxCore {
         // ----------------------------------------------------------------------------
         // MARK: - Dax RX Actions
         
-      case let .daxRxs(.element(x, .binding(\.channel))):
-        print("----->>>>> .daxRxs, channel = \(state.daxRxs[id: x]?.channel)")
+      case let .daxRxStates(.element(channel, .binding(\.device))):
+        print("--->>> daxRxs[\(channel)] device = \(state.daxRxStates[id: channel]?.device)")
+        state.daxRxDevices[channel - 1].device = state.daxRxStates[id: channel]?.device
         return .none
 
-      case let .daxRxs(.element(x, .binding(\.deviceID))):
-        print("----->>>>> .daxRxs, deviceID = \(state.daxRxs[id: x]?.deviceID)")
+      case let .daxRxStates(.element(channel, .binding(\.gain))):
+        print("--->>> daxRxs[\(channel)] gain = \(state.daxRxStates[id: channel]?.gain)")
+        if let gain = state.daxRxStates[id: channel]?.gain {
+          state.daxRxDevices[channel - 1].gain = gain
+        }
         return .none
 
-      case let .daxRxs(.element(x, .binding(\.enabled))):
-        print("----->>>>> .daxRxs, enabled = \(state.daxRxs[id: x]?.enabled)")
+      case let .daxRxStates(.element(channel, .binding(\.isOn))):
+//        print("----->>>>> .daxRxs[\(id)] isOn = \(state.daxRxs[id: id]?.isOn)")
+        // if already connected, Start/Stop the id'd stream
+        if state.connectionState == .connected {
+          if state.daxRxStates[id: channel]!.isOn {
+            log("DaxAudioPlayer: STARTED, channel = \(channel)", .debug, #function, #file, #line)
+            state.daxRxStates[id: channel]!.status = "Streaming"
+            return daxStart(state, channels: [channel])
+          } else {
+            log("DaxAudioPlayer: STOPPED, channel = \(channel)", .debug, #function, #file, #line)
+            state.daxRxStates[id: channel]!.status = "Off"
+            return daxStop(state, channels: [channel])
+          }
+        }
         return .none
 
-      case let .daxRxs(.element(x, .binding(\.gain))):
-        print("----->>>>> .daxRxs, gain = \(state.daxRxs[id: x]?.gain)")
+      case let .daxRxStates(.element(channel, .binding(\.showDetails))):
+        print("----->>>>> .daxRxs[\(channel)] showDetails = \(state.daxRxStates[id: channel]?.showDetails)")
         return .none
 
-      case .daxRxs(_):
+      case .daxRxStates(_):
         print("----->>>>> .daxRxs ????")
         return .none
               
         // ----------------------------------------------------------------------------
-        // MARK: - Dax RX Actions
+        // MARK: - Dax IQ Actions
         
-      case let .daxIqs(.element(x, .binding(\.channel))):
-        print("----->>>>> .daxRxs, channel = \(state.daxIqs[id: x]?.channel)")
+      case let .daxIqStates(.element(channel, .binding(\.device))):
+        print("--->>> daxRxs[\(channel)] device = \(state.daxIqStates[id: channel]?.device)")
         return .none
 
-      case let .daxIqs(.element(x, .binding(\.deviceID))):
-        print("----->>>>> .daxRxs, deviceID = \(state.daxIqs[id: x]?.deviceID)")
+      case let .daxIqStates(.element(channel, .binding(\.gain))):
+        print("--->>> daxRxs[\(channel)] gain = \(state.daxIqStates[id: channel]?.gain)")
         return .none
 
-      case let .daxIqs(.element(x, .binding(\.enabled))):
-        print("----->>>>> .daxRxs, enabled = \(state.daxIqs[id: x]?.enabled)")
+      case let .daxIqStates(.element(channel, .binding(\.isOn))):
+        print("----->>>>> .daxRxs[\(channel)] isOn = \(state.daxIqStates[id: channel]?.isOn)")
         return .none
 
-      case let .daxIqs(.element(x, .binding(\.gain))):
-        print("----->>>>> .daxRxs, gain = \(state.daxIqs[id: x]?.gain)")
+      case let .daxIqStates(.element(channel, .binding(\.sampleRate))):
+        print("----->>>>> .daxRxs[\(channel)] sampleRate = \(state.daxIqStates[id: channel]?.sampleRate)")
         return .none
 
-      case let .daxIqs(.element(x, .binding(\.sampleRate))):
-        print("----->>>>> .daxRxs, gain = \(state.daxIqs[id: x]?.sampleRate)")
+      case let .daxIqStates(.element(channel, .binding(\.showDetails))):
+        print("----->>>>> .daxRxs[\(channel)] showDetails = \(state.daxIqStates[id: channel]?.showDetails)")
         return .none
 
-      case .daxIqs(_):
+      case .daxIqStates(_):
         print("----->>>>> .daxIqs ????")
         return .none
       }
@@ -482,7 +507,7 @@ public struct SDRDaxCore {
   }
   
   // ----------------------------------------------------------------------------
-  // MARK: - Private effect methods
+  // MARK: - Connection effect methods
   
   private func connect(_ state: State, _ selection: String, _ disconnectHandle: UInt32?) -> Effect<SDRDaxCore.Action> {
     ListenerModel.shared.setActive(state.isGui, selection, state.directEnabled)
@@ -505,73 +530,75 @@ public struct SDRDaxCore {
     }
   }
   
-  private func connectionStartStop(_ state: State) -> Effect<SDRDaxCore.Action> {
-    if state.connectionState == .connected {
-      // ----- STOPPING -----
-      //      MessagesModel.shared.stop(state.clearOnStop)
-      return .run {
-        //        if state.remoteRxAudioEnabled { await remoteRxAudioStop(state) }
-        await ApiModel.shared.disconnect()
-        await $0(.connectionStatus(.disconnected))
-      }
-      
+  private func connectionStart(_ state: State) -> Effect<SDRDaxCore.Action> {
+    if state.directEnabled {
+      return connectionStartDirect(state)
     } else {
-      // ----- STARTING -----
-      //      MessagesModel.shared.start(state.clearOnStart)
-      if state.directEnabled {
-        // DIRECT Mode
-        return .run {
-          if state.isGui && !state.directGuiIp.isEmpty {
-            let selection = "9999-9999-9999-9999" + state.directGuiIp
-            await $0(.connect(selection, nil))
-            
-          } else if !state.directNonGuiIp.isEmpty {
-            let selection = "9999-9999-9999-9999" + state.directNonGuiIp
-            await $0(.connect(selection, nil))
-            
-          } else {
-            // no Ip Address for the current connection type
-            await $0(.showDirectSheet)
-          }
-        }
+      return connectionStartLocalSmartlink(state)
+    }
+  }
+  
+  private func connectionStartDirect(_ state: State) -> Effect<SDRDaxCore.Action> {
+    return .run {
+      if state.isGui && !state.directGuiIp.isEmpty {
+        let selection = "9999-9999-9999-9999" + state.directGuiIp
+        await $0(.connect(selection, nil))
+        
+      } else if !state.directNonGuiIp.isEmpty {
+        let selection = "9999-9999-9999-9999" + state.directNonGuiIp
+        await $0(.connect(selection, nil))
         
       } else {
-        return .run {
-          if state.useDefaultEnabled {
-            // LOCAL/SMARTLINK mode connection using the Default, is there a valid? Default
-            if ListenerModel.shared.isValidDefault(for: state.guiDefault, state.nonGuiDefault, state.isGui) {
-              // YES, valid default
-              if state.isGui {
-                await $0(.multiflexStatus(state.guiDefault!))
-              } else {
-                await $0(.multiflexStatus(state.nonGuiDefault!))
-              }
-            } else {
-              // NO, invalid default
-              await $0(.showPickerSheet)
-            }
-          } else {
-            // default not in use, open the Picker
-            await $0(.showPickerSheet)
-          }
-        }
+        // no Ip Address for the current connection type
+        await $0(.showDirectSheet)
       }
     }
   }
   
+  private func connectionStartLocalSmartlink(_ state: State) -> Effect<SDRDaxCore.Action> {
+    return .run {
+      if state.useDefaultEnabled {
+        // LOCAL/SMARTLINK mode connection using the Default, is there a valid? Default
+        if ListenerModel.shared.isValidDefault(for: state.guiDefault, state.nonGuiDefault, state.isGui) {
+          // YES, valid default
+          if state.isGui {
+            await $0(.multiflexStatus(state.guiDefault!))
+          } else {
+            await $0(.multiflexStatus(state.nonGuiDefault!))
+          }
+        } else {
+          // NO, default is invalid
+          await $0(.showPickerSheet)
+        }
+      } else {
+        // default not in use, open the Picker
+        await $0(.showPickerSheet)
+      }
+    }
+  }
+  
+  private func connectionStop() -> Effect<SDRDaxCore.Action> {
+    return .run {
+      await ApiModel.shared.disconnect()
+      await $0(.connectionStatus(.disconnected))
+    }
+  }
+  
   private func connectionStatus(_ state: inout State, _ status: ConnectionState) -> Effect<SDRDaxCore.Action> {
-    
     switch status {
     case .connected:
       state.connectionState = .connected
+      return daxStartAll(state)
       
     case .errorOnConnect:
       state.connectionState = .disconnected
       return .run {
         await $0(.showAlert(.connectFailed, ""))
       }
+      
     case .disconnected:
       state.connectionState = .disconnected
+      return daxStopAll(state)
       
     case .errorOnDisconnect:
       state.connectionState = .disconnected
@@ -586,13 +613,91 @@ public struct SDRDaxCore {
       state.connectionState = .disconnecting
       return .none
     }
-    return .none
   }
+  
+  private func multiflexConnectionStatus(_ state: State, _ selection: String) -> Effect<SDRDaxCore.Action> {
+    return .run {
+      if state.isGui {
+        // GUI selection
+        if let selectedPacket = ListenerModel.shared.packets[id: selection] {
+          
+          // Gui connection with other stations?
+          if selectedPacket.guiClients.count > 0 {
+            // show the client chooser, let the user choose
+            await $0(.showClientSheet(selection, selectedPacket.guiClients))
+          } else {
+            // Gui without other stations, attempt to connect
+            await $0(.connect(selection, nil))
+          }
+        } else {
+          // packet not found, should be impossible
+          fatalError("ConnectionStatus: Packet not found")
+        }
+      } else {
+        // NON-GUI selection
+        await $0(.connect(selection, nil))
+      }
+    }
+  }
+
+  // ----------------------------------------------------------------------------
+  // MARK: - DAX effect methods
+  
+  private func daxStart(_ state: State, channels: [Int]) -> Effect<SDRDaxCore.Action> {
+    return .run { [state, channels] _ in
+      for channel in channels {
+        // request a stream
+        if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: channel).streamId {
+          // finish audio setup
+          state.daxRxDevices[channel - 1].start(streamId)
+          await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.daxRxDevices[channel - 1]
+          log("DaxAudioPlayer: STARTED, channel = \(channel)", .debug, #function, #file, #line)
+
+        } else {
+          // FAILURE, tell the user it failed
+          //      alertText = "Failed to start a RemoteRxAudioStream"
+          //      showAlert = true
+          fatalError("Failed to start a RemoteRxAudioStream")
+        }
+      }
+    }
+  }
+  
+  private func daxStartAll(_ state: State) -> Effect<SDRDaxCore.Action> {
+    var channels = [Int]()
+    for daxRxState in state.daxRxStates where daxRxState.isOn {
+      channels.append(daxRxState.channel)
+    }
+    return daxStart(state, channels: channels)
+  }
+  
+  private func daxStop(_ state: State, channels: [Int]) -> Effect<SDRDaxCore.Action> {
+    var streamIds = [UInt32?]()
+    for channel in channels {
+      streamIds.append(state.daxRxDevices[channel - 1].streamId)
+      state.daxRxDevices[channel - 1].stop()
+      log("DaxAudioPlayer: STOPPED, channel = \(channel)", .debug, #function, #file, #line)
+    }
+    return .run { [streamIds] _ in
+      // remove stream(s)
+      await ApiModel.shared.sendRemoveStreams(streamIds)
+    }
+  }
+  
+  private func daxStopAll(_ state: State) -> Effect<SDRDaxCore.Action> {
+    var channels = [Int]()
+    for daxRxState in state.daxRxStates where daxRxState.isOn {
+      channels.append(daxRxState.channel)
+    }
+    return daxStop(state, channels: channels)
+  }
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Initialization effect methods
   
   private func initState(_ state: inout State) -> Effect<SDRDaxCore.Action> {
     if state.initialized == false {
       
-//      state.alertOnError = UserDefaults.standard.bool(forKey: "alertOnError")
       state.daxPanelOptions = DaxPanelOptions(rawValue: UInt8(UserDefaults.standard.integer(forKey: "daxPanelOptions")))
 //      state.daxMicSetting = UserDefaults.getStructFromSettings("daxMicSetting", defaults: UserDefaults.standard) ?? DaxSetting(channel: 1) as DaxSetting
 //      state.daxRxSetting = UserDefaults.getStructFromSettings("daxRxSetting", defaults: UserDefaults.standard) ?? DaxSetting(channel: 1) as DaxSetting
@@ -619,68 +724,57 @@ public struct SDRDaxCore {
       // mark as initialized
       state.initialized = true
       
-      return listenerStartStop(&state)
+      if state.localEnabled { _ = localListenerStart() }
+      if state.smartlinkEnabled { return smartlinkListenerStart(&state) }
     }
     return .none
   }
+
   
-  // start/stop listener, as needed
-  private func listenerStartStop(_ state: inout State) -> Effect<SDRDaxCore.Action> {
-    // start/stop local mode
-    ListenerModel.shared.localMode(state.localEnabled)
-    
-    // start smartlink mode?
-    if state.smartlinkEnabled {
+  // ----------------------------------------------------------------------------
+  // MARK: - Local Listener effect methods
+
+  private func localListenerStart() -> Effect<SDRDaxCore.Action> {
+    ListenerModel.shared.localMode(true)
+    return .none
+  }
+  
+  private func localListenerStop() -> Effect<SDRDaxCore.Action> {
+    ListenerModel.shared.localMode(false)
+    ListenerModel.shared.removePackets(condition: {$0.source == .local})
+    return .none
+  }
+  
+  // ----------------------------------------------------------------------------
+  // MARK: - Smartlink Listener effect methods
+
+  private func smartlinkListenerStart(_ state: inout State) -> Effect<SDRDaxCore.Action> {
+    if state.smartlinkLoginRequired || state.smartlinkUser.isEmpty {
+      // YES but login required or no user
+      state.previousIdToken = nil
+      state.refreshToken = nil
+      return .run {
+        await $0(.showLoginSheet)
+      }
       
-      if state.smartlinkLoginRequired || state.smartlinkUser.isEmpty {
-        // YES but login required or no user
-        state.previousIdToken = nil
-        state.refreshToken = nil
-        return .run {
-          await $0(.showLoginSheet)
-        }
-        
-      } else {
-        // YES, try
-        return .run { [state] in
-          let tokens = await ListenerModel.shared.smartlinkMode(state.smartlinkUser,
-                                                                state.smartlinkLoginRequired,
-                                                                state.previousIdToken,
-                                                                state.refreshToken)
-          await $0(.saveTokens(tokens))
-        }
-      }
     } else {
-      ListenerModel.shared.removePackets(condition: {$0.source == .smartlink})
-      return .none
-    }
-  }
-  
-  private func multiflexStatus(_ state: State, _ selection: String) -> Effect<SDRDaxCore.Action> {
-    return .run {
-      if state.isGui {
-        // GUI selection
-        if let selectedPacket = ListenerModel.shared.packets[id: selection] {
-          
-          // Gui connection with other stations?
-          if selectedPacket.guiClients.count > 0 {
-            // show the client chooser, let the user choose
-            await $0(.showClientSheet(selection, selectedPacket.guiClients))
-          } else {
-            // Gui without other stations, attempt to connect
-            await $0(.connect(selection, nil))
-          }
-        } else {
-          // packet not found, should be impossible
-          fatalError("ConnectionStatus: Packet not found")
-        }
-      } else {
-        // NON-GUI selection
-        await $0(.connect(selection, nil))
+      // YES, try
+      return .run { [state] in
+        let tokens = await ListenerModel.shared.smartlinkMode(state.smartlinkUser,
+                                                              state.smartlinkLoginRequired,
+                                                              state.previousIdToken,
+                                                              state.refreshToken)
+        await $0(.saveTokens(tokens))
       }
     }
   }
   
+  private func smartlinkListenerStop() -> Effect<SDRDaxCore.Action> {
+    ListenerModel.shared.smartlinkStop()
+    ListenerModel.shared.removePackets(condition: {$0.source == .smartlink})
+    return .none
+  }
+    
   private func smartlinkUserLogin(_ state: inout State, _ user: String, _ password: String) -> Effect<SDRDaxCore.Action> {
     state.smartlinkUser = user
     return .run {
@@ -688,15 +782,6 @@ public struct SDRDaxCore {
       await $0(.saveTokens(tokens))
     }
   }
-  
-//  private func subscribeToLogAlerts() ->  Effect<SDRDaxCore.Action>  {
-//    return .run {
-//      for await logEntry in logAlerts {
-//        // a Warning or Error has been logged.
-//        await $0(.showLogAlert(logEntry))
-//      }
-//    }
-//  }
 }
 
 // ----------------------------------------------------------------------------

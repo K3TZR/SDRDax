@@ -9,48 +9,36 @@ import AVFoundation
 import ComposableArchitecture
 import SwiftUI
 
+import DaxAudioFeature
 import LevelIndicatorView
 import SharedFeature
 
 struct DaxRxView: View {
   @Bindable var store: StoreOf<DaxRxCore>
   let devices: [AudioDevice]
-  
-  private let channels = [0,1,2,3,4,5,6,7,8]
-  @State var showDetails = false
-    
+      
   var body: some View {
     
     GroupBox {
       VStack(alignment: .leading) {
-        HStack(spacing: 20) {
-          Image(systemName: showDetails ? "chevron.down" : "chevron.right").font(.title2)
+        HStack(spacing: 10) {
+          Image(systemName: store.showDetails ? "chevron.down" : "chevron.right").font(.title2)
             .onTapGesture {
-              showDetails.toggle()
-            }
+              store.showDetails.toggle()
+            }.frame(width: 40)
             .help("Show / Hide Details")
-          Toggle(isOn: $store.enabled,
-                 label: { Text("Enabled") }).disabled(store.deviceID == nil)
+          Toggle("Rx\(store.channel)", isOn: $store.isOn).toggleStyle(.button).disabled(store.device == nil)
+          Spacer()
           Text("Status")
-          Text(DaxModel.shared.status).frame(width: 110)
+          Text(store.status).frame(width: 150)
         }.frame(width: 320)
         
-        if showDetails {
+        if store.showDetails {
           Grid(alignment: .leading, horizontalSpacing: 10) {
-            GridRow {
-              Text("Channel")
-              Picker("", selection: $store.channel) {
-                ForEach(channels, id: \.self) {
-                  Text($0 == 0 ? "none" : "\($0)").tag($0)
-                }
-              }
-              .frame(width: 100)
-              .labelsHidden()
-            }
             
             GridRow {
               Text("Output Device")
-              Picker("", selection: $store.deviceID) {
+              Picker("", selection: $store.device) {
                 Text("none").tag(nil as AudioDeviceID?)
                 ForEach(devices, id: \.id) {
                   if $0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
@@ -68,7 +56,7 @@ struct DaxRxView: View {
               })
             }
           }
-          LevelIndicatorView(levels: DaxModel.shared.daxRxAudioPlayer?.levels ?? SignalLevel(rms: -40, peak: -40), type: .dax)
+//          LevelIndicatorView(levels: store.audioPlayer.levels, type: .dax)
         }
       }
     }.frame(width: 320)
@@ -78,7 +66,7 @@ struct DaxRxView: View {
 
 #Preview {
   DaxRxView(
-    store: Store(initialState: DaxRxCore.State(id: UUID())) {
+    store: Store(initialState: DaxRxCore.State(channel: 1)) {
       DaxRxCore()
     }, devices: AudioDevice.getDevices()
   )

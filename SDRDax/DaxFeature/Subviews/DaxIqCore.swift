@@ -8,6 +8,7 @@
 import ComposableArchitecture
 import Foundation
 
+import DaxAudioFeature
 import SharedFeature
 
 @Reducer
@@ -20,13 +21,15 @@ public struct DaxIqCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    public var id: UUID
-    public var enabled: Bool = false
-    public var channel: Int = 0
-    public var deviceID: UInt32? = nil
-    public var gain: Double = 0.5
-    public var status: String = "off"
-    public var sampleRate: Int = 24_000
+    let channel: Int
+    var device: UInt32?
+    var gain: Double = 0.5
+    var isOn: Bool = false
+    var sampleRate = 24_000
+    var showDetails = true
+    var status = "Off"
+    
+    public var id: Int { channel }
   }
   
   // ----------------------------------------------------------------------------
