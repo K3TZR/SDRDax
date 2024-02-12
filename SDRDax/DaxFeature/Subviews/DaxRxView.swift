@@ -22,14 +22,17 @@ struct DaxRxView: View {
     GroupBox {
       VStack(alignment: .leading) {
         HStack(spacing: 10) {
-          Image(systemName: store.showDetails ? "chevron.down" : "chevron.right").font(.title2)
+          Image(systemName: store.showDetails ? "chevron.up.square" : "chevron.down.square").font(.title)
             .onTapGesture {
               store.showDetails.toggle()
-            }.frame(width: 40)
+            }
+//            .frame(width: 40)
             .help("Show / Hide Details")
-          Toggle("Rx\(store.channel)", isOn: $store.isOn).toggleStyle(.button).disabled(store.device == nil)
+          Toggle(isOn: $store.isOn) { Text("Rx\(store.channel)").frame(width:30) }
+            .toggleStyle(.button)
+            .disabled(store.device == nil)
           Spacer()
-          Text("Status")
+          Text("Slice " + store.sliceLetter).opacity(store.sliceLetter.isEmpty ? 0 : 1)
           Text(store.status).frame(width: 150)
         }.frame(width: 320)
         
@@ -37,7 +40,7 @@ struct DaxRxView: View {
           Grid(alignment: .leading, horizontalSpacing: 10) {
             
             GridRow {
-              Text("Output Device")
+              Text("Output Device").frame(width: 100, alignment: .leading)
               Picker("", selection: $store.device) {
                 Text("none").tag(nil as AudioDeviceID?)
                 ForEach(devices, id: \.id) {
@@ -56,7 +59,8 @@ struct DaxRxView: View {
               })
             }
           }
-//          LevelIndicatorView(levels: store.audioPlayer.levels, type: .dax)
+          // TODO: need source of levels
+          LevelIndicatorView(levels: SignalLevel(rms: -30, peak: -20), type: .dax)
         }
       }
     }.frame(width: 320)

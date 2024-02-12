@@ -27,6 +27,7 @@ public struct DaxRxCore {
     var gain: Double = 0.5
     var isOn: Bool = false
     var showDetails = true
+    var sliceLetter = ""
     var status = "Off"
 
     public var id: Int { channel }

@@ -83,14 +83,17 @@ struct DaxSelectionView: View {
         VStack(spacing: 5) {
           if store.daxPanelOptions.contains(.tx) {
             DaxTxView(store: store, devices: AudioDevice.getDevices())
+            Divider().frame(height: 3).background(Color(.controlTextColor))
           }
           if store.daxPanelOptions.contains(.mic) {
             DaxMicView(store: store, devices: AudioDevice.getDevices())
+            Divider().frame(height: 3).background(Color(.controlTextColor))
           }
           if store.daxPanelOptions.contains(.rx) {
             ForEach(store.scope(state: \.daxRxStates, action: \.daxRxStates)) { store in
               DaxRxView(store: store, devices: AudioDevice.getDevices())
             }
+            Divider().frame(height: 3).background(Color(.controlTextColor))
           }
           if store.daxPanelOptions.contains(.iq) {
             ForEach(store.scope(state: \.daxIqStates, action: \.daxIqStates)) { store in

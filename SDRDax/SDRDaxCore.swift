@@ -64,7 +64,7 @@ public struct SDRDaxCore {
       DaxIqCore.State(
         channel: 1,
         device: nil,
-        gain: 0.5,
+        frequency: nil,
         isOn: false,
         sampleRate: 24_000,
         showDetails: true
@@ -72,7 +72,7 @@ public struct SDRDaxCore {
       DaxIqCore.State(
         channel: 2,
         device: nil,
-        gain: 0.5,
+        frequency: nil,
         isOn: false,
         sampleRate: 24_000,
         showDetails: true
@@ -80,7 +80,7 @@ public struct SDRDaxCore {
       DaxIqCore.State(
         channel: 3,
         device: nil,
-        gain: 0.5,
+        frequency: nil,
         isOn: false,
         sampleRate: 24_000,
         showDetails: true
@@ -88,7 +88,7 @@ public struct SDRDaxCore {
       DaxIqCore.State(
         channel: 4,
         device: nil,
-        gain: 0.5,
+        frequency: nil,
         isOn: false,
         sampleRate: 24_000,
         showDetails: true
@@ -109,28 +109,32 @@ public struct SDRDaxCore {
         device: nil,
         gain: 0.5,
         isOn: false,
-        showDetails: true
+        showDetails: true,
+        sliceLetter: "A"
       ),
       DaxRxCore.State(
         channel: 2,
         device: nil,
         gain: 0.5,
         isOn: false,
-        showDetails: true
+        showDetails: true,
+        sliceLetter: "B"
       ),
       DaxRxCore.State(
         channel: 3,
         device: nil,
         gain: 0.5,
         isOn: false,
-        showDetails: true
+        showDetails: true,
+        sliceLetter: "C"
       ),
       DaxRxCore.State(
         channel: 4,
         device: nil,
         gain: 0.5,
         isOn: false,
-        showDetails: true
+        showDetails: true,
+        sliceLetter: ""
       ),
     ]
     var daxTx = DaxDevice(channel: 0)
@@ -218,42 +222,6 @@ public struct SDRDaxCore {
           return connectionStart(state)
         }
                 
-//      case let .daxRxChannelChanged(newValue):
-//        state.daxRxSetting.channel = newValue
-//        print("----->>>>> daxRxChannel = \(newValue)")
-//        return .none
-//        
-//      case let .daxRxGainChanged(newValue):
-//        state.daxRxSetting.gain = newValue
-//        print("----->>>>> daxRxGain = \(newValue)")
-//        return .run {[state] _ in
-//          await DaxModel.shared.setGain(channel: state.daxRxSetting.channel, gain: state.daxRxSetting.gain)
-//        }
-//
-//      case let .daxRxDeviceIDChanged(newValue):
-//        state.daxRxSetting.deviceID = newValue
-//        print("----->>>>> daxRxDeviceID = \(newValue)")
-//        return .run {[state] _ in
-//          if newValue != nil {
-//            print("----->>>>> New AudioDeviceID", newValue!)
-//            await DaxModel.shared.setDevice(state.daxRxSetting.channel, newValue!)
-//            
-//          } else {
-//            print("----->>>>> New AudioDeviceID", "none")
-//          }
-//        }
-//
-//      case let .daxRxEnabledChanged(newValue):
-//        state.daxRxSetting.enabled = newValue
-//        print("----->>>>> daxRxEnabled = \(newValue)")
-//        return .run {[state] _ in
-//          if newValue {
-//            await DaxModel.shared.startDaxRxAudio(state.daxRxSetting.deviceID!, state.daxRxSetting.channel)
-//          } else {
-//            await DaxModel.shared.stopDaxRxAudio(state.daxRxSetting.channel)
-//          }
-//        }
-        
         // ----------------------------------------------------------------------------
         // MARK: - Root Binding Actions
         
@@ -472,10 +440,6 @@ public struct SDRDaxCore {
         
       case let .daxIqStates(.element(channel, .binding(\.device))):
         print("--->>> daxRxs[\(channel)] device = \(state.daxIqStates[id: channel]?.device)")
-        return .none
-
-      case let .daxIqStates(.element(channel, .binding(\.gain))):
-        print("--->>> daxRxs[\(channel)] gain = \(state.daxIqStates[id: channel]?.gain)")
         return .none
 
       case let .daxIqStates(.element(channel, .binding(\.isOn))):

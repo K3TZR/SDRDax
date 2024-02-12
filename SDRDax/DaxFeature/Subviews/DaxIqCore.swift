@@ -23,11 +23,10 @@ public struct DaxIqCore {
   public struct State: Equatable, Identifiable {
     let channel: Int
     var device: UInt32?
-    var gain: Double = 0.5
+    var frequency: Double?
     var isOn: Bool = false
     var sampleRate = 24_000
     var showDetails = true
-    var status = "Off"
     
     public var id: Int { channel }
   }

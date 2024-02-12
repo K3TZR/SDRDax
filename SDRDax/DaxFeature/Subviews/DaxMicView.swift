@@ -20,12 +20,13 @@ struct DaxMicView: View {
     GroupBox {
       VStack(alignment: .leading) {
         HStack(spacing: 10) {
-          Image(systemName: store.daxMic.showDetails ? "chevron.down" : "chevron.right").font(.title2)
+          Image(systemName: store.daxTx.showDetails ? "chevron.up.square" : "chevron.down.square").font(.title)
             .onTapGesture {
               store.daxMic.showDetails.toggle()
-            }.frame(width: 40)
+            }
             .help("Show / Hide Details")
-          Toggle("MIC", isOn: $store.daxMic.enabled).toggleStyle(.button)
+          Toggle(isOn: $store.daxMic.enabled) { Text("MIC").frame(width: 30) } 
+            .toggleStyle(.button)
           Spacer()
           Text("Status")
           Text(store.daxMic.status).frame(width: 150)
@@ -35,7 +36,7 @@ struct DaxMicView: View {
           Grid(alignment: .topLeading, horizontalSpacing: 10) {
             
             GridRow {
-              Text("Output Device")
+              Text("Output Device").frame(width: 100, alignment: .leading)
               Picker("", selection: $store.daxMic.deviceID) {
                 Text("None").tag(nil as AudioDeviceID?)
                 ForEach(devices, id: \.id) {
@@ -56,7 +57,7 @@ struct DaxMicView: View {
           }
         }
       }
-    }
+    }.frame(width: 320)
   }
 }
 

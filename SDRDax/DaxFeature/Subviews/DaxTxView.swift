@@ -21,12 +21,13 @@ struct DaxTxView: View {
     GroupBox {
       VStack(alignment: .leading) {
         HStack(spacing: 10) {
-          Image(systemName: store.daxTx.showDetails ? "chevron.down" : "chevron.right").font(.title2)
+          Image(systemName: store.daxTx.showDetails ? "chevron.up.square" : "chevron.down.square").font(.title)
             .onTapGesture {
               store.daxTx.showDetails.toggle()
-            }.frame(width: 40)
+            }
             .help("Show / Hide Details")
-          Toggle("TX", isOn: $store.daxTx.enabled).toggleStyle(.button)
+          Toggle(isOn: $store.daxTx.enabled) { Text("TX").frame(width: 30) }            
+            .toggleStyle(.button)
           Spacer()
           Text("Status")
           Text(store.daxTx.status).frame(width: 150)
@@ -36,7 +37,7 @@ struct DaxTxView: View {
           Grid(alignment: .topLeading, horizontalSpacing: 10) {
             
             GridRow {
-              Text("Input Device")
+              Text("Input Device").frame(width: 100, alignment: .leading)
               Picker("", selection: $store.daxTx.deviceID) {
                 Text("None").tag(nil as AudioDeviceID?)
                 ForEach(devices, id: \.id) {
@@ -57,7 +58,7 @@ struct DaxTxView: View {
           }
         }
       }
-    }
+    }.frame(width: 320)
 //    .groupBoxStyle(PlainGroupBoxStyle())
   }
 }
