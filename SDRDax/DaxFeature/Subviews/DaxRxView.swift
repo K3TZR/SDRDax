@@ -26,13 +26,14 @@ struct DaxRxView: View {
             .onTapGesture {
               store.showDetails.toggle()
             }
-//            .frame(width: 40)
             .help("Show / Hide Details")
+
           Toggle(isOn: $store.isOn) { Text("Rx\(store.channel)").frame(width:30) }
             .toggleStyle(.button)
-            .disabled(store.device == nil)
+            .disabled(store.audioPlayer.deviceId == nil /* || store.sliceLetter == nil */)
+
           Spacer()
-          Text("Slice " + store.sliceLetter).opacity(store.sliceLetter.isEmpty ? 0 : 1)
+          Text(store.sliceLetter == nil ? "No Slice" : store.sliceLetter!)
           Text(store.status).frame(width: 150)
         }.frame(width: 320)
         
@@ -41,7 +42,7 @@ struct DaxRxView: View {
             
             GridRow {
               Text("Output Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.device) {
+              Picker("", selection: $store.audioPlayer.deviceId) {
                 Text("none").tag(nil as AudioDeviceID?)
                 ForEach(devices, id: \.id) {
                   if $0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
@@ -53,14 +54,13 @@ struct DaxRxView: View {
             GridRow {
               HStack {
                 Text("Gain")
-                Text("\(Int(store.gain * 100))").frame(width: 40, alignment: .trailing)
+                Text("\(Int(store.audioPlayer.gain))").frame(width: 40, alignment: .trailing)
               }
-              Slider(value: $store.gain, in: 0...1, label: {
+              Slider(value: $store.audioPlayer.gain, in: 0...100, label: {
               })
             }
           }
-          // TODO: need source of levels
-          LevelIndicatorView(levels: SignalLevel(rms: -30, peak: -20), type: .dax)
+          LevelIndicatorView(levels: store.audioPlayer.levels, type: .dax)
         }
       }
     }.frame(width: 320)
@@ -70,7 +70,7 @@ struct DaxRxView: View {
 
 #Preview {
   DaxRxView(
-    store: Store(initialState: DaxRxCore.State(channel: 1)) {
+    store: Store(initialState: DaxRxCore.State(audioPlayer: DaxAudioPlayer(), channel: 1)) {
       DaxRxCore()
     }, devices: AudioDevice.getDevices()
   )

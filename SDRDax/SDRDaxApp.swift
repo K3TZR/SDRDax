@@ -24,6 +24,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
   func applicationWillTerminate(_ notification: Notification) {
     ApiModel.shared.disconnect()
     log("SDRDax: application terminated", .debug, #function, #file, #line)
+    // pause to allow the log messages through
+    sleep(1)
   }
   
   func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool {
@@ -39,13 +41,24 @@ struct SDRDaxApp: App {
   @State var apiModel = ApiModel.shared
   @State var listenerModel = ListenerModel.shared
   
-    var body: some Scene {
-        WindowGroup("SDRDax  (v" + Version().string + ")") {
-          SDRDaxView(store: Store(initialState: SDRDaxCore.State()) {
-            SDRDaxCore()
-          })
-          .environment(apiModel)
-          .environment(listenerModel)
-        }
+  var body: some Scene {
+    WindowGroup("SDRDax  (v" + Version().string + ")") {
+      SDRDaxView(store: Store(initialState: SDRDaxCore.State()) {
+        SDRDaxCore()
+      })
+      .environment(apiModel)
+      .environment(listenerModel)
     }
+    .windowStyle(.titleBar)
+
+    
+    // Settings window
+    Settings {
+      SettingsView()
+    }
+    .windowStyle(.hiddenTitleBar)
+    .windowResizability(WindowResizability.contentSize)
+    .defaultPosition(.bottomLeading)
+
+  }
 }

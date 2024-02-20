@@ -25,7 +25,7 @@ struct DaxMicView: View {
               store.daxMic.showDetails.toggle()
             }
             .help("Show / Hide Details")
-          Toggle(isOn: $store.daxMic.enabled) { Text("MIC").frame(width: 30) } 
+          Toggle(isOn: $store.daxMic.isOn) { Text("MIC").frame(width: 30) }
             .toggleStyle(.button)
           Spacer()
           Text("Status")
@@ -37,7 +37,7 @@ struct DaxMicView: View {
             
             GridRow {
               Text("Output Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.daxMic.deviceID) {
+              Picker("", selection: $store.daxMic.audioPlayer.deviceId) {
                 Text("None").tag(nil as AudioDeviceID?)
                 ForEach(devices, id: \.id) {
                   if $0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
@@ -49,9 +49,9 @@ struct DaxMicView: View {
             GridRow {
               HStack {
                 Text("Gain")
-                Text("\(Int(store.daxMic.gain * 100))").frame(width: 40, alignment: .trailing)
+                Text("\(Int(store.daxMic.audioPlayer.gain ))").frame(width: 40, alignment: .trailing)
               }
-              Slider(value: $store.daxMic.gain, in: 0...1, label: {
+              Slider(value: $store.daxMic.audioPlayer.gain, in: 0...100, label: {
               })
             }
           }

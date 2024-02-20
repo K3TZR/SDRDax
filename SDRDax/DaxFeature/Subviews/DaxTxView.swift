@@ -26,7 +26,7 @@ struct DaxTxView: View {
               store.daxTx.showDetails.toggle()
             }
             .help("Show / Hide Details")
-          Toggle(isOn: $store.daxTx.enabled) { Text("TX").frame(width: 30) }            
+          Toggle(isOn: $store.daxTx.isOn) { Text("TX").frame(width: 30) }
             .toggleStyle(.button)
           Spacer()
           Text("Status")
@@ -38,7 +38,7 @@ struct DaxTxView: View {
             
             GridRow {
               Text("Input Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.daxTx.deviceID) {
+              Picker("", selection: $store.daxTx.audioPlayer.deviceId) {
                 Text("None").tag(nil as AudioDeviceID?)
                 ForEach(devices, id: \.id) {
                   if !$0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
@@ -50,9 +50,9 @@ struct DaxTxView: View {
             GridRow {
               HStack {
                 Text("Gain")
-                Text("\(Int(store.daxTx.gain * 100))").frame(width: 40, alignment: .trailing)
+                Text("\(Int(store.daxTx.audioPlayer.gain))").frame(width: 40, alignment: .trailing)
               }
-              Slider(value: $store.daxTx.gain, in: 0...1, label: {
+              Slider(value: $store.daxTx.audioPlayer.gain, in: 0...100, label: {
               })
             }
           }
