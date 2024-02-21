@@ -46,10 +46,13 @@ struct SDRDaxApp: App {
       SDRDaxView(store: Store(initialState: SDRDaxCore.State()) {
         SDRDaxCore()
       })
+      .frame(minWidth: 370, maxWidth: 370)
+      .padding(10)
       .environment(apiModel)
       .environment(listenerModel)
     }
     .windowStyle(.titleBar)
+    .windowResizability(.contentSize)
 
     
     // Settings window

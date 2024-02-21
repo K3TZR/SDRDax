@@ -197,6 +197,7 @@ public struct SDRDaxCore {
     case binding(BindingAction<State>)
     case onAppear
     case stationsChanged
+    case setAutoSelection(String?)
     
     // subview actions
     case iqStates(IdentifiedActionOf<DaxIqCore>)
@@ -247,6 +248,10 @@ public struct SDRDaxCore {
         // perform initialization
         return .concatenate( initState(&state))
         
+      case let .setAutoSelection(selection):
+        state.autoSelection = selection
+        return .none
+
       case .stationsChanged:
         print("stationsChanged")
         if state.selection == nil {
@@ -259,14 +264,6 @@ public struct SDRDaxCore {
         // ----------------------------------------------------------------------------
         // MARK: - Root Binding Actions
         
-//      case .binding(\.localEnabled):
-//        if state.localEnabled {
-//          return localListenerStart()
-//        } else {
-//          return localListenerStop()
-//        }
-//        return .none
-        
       case .binding(\.smartlinkEnabled):
         if state.smartlinkEnabled {
           return .concatenate(localListenerStop(), smartlinkListenerStart(&state))
@@ -274,15 +271,6 @@ public struct SDRDaxCore {
           return .concatenate( smartlinkListenerStop(), localListenerStart())
         }
 
-//      case .binding(\.selectedStation):
-//        if state.selectedStation == nil {
-//          // STOP
-//          return connectionStop()
-//        } else {
-//          // START
-//          return connect(state, state.selectedStation)
-//        }
-        
       case .binding(\.selection):
         print("Selection = \(state.selection)")
         if state.selection == nil {

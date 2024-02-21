@@ -19,6 +19,8 @@ struct SDRDaxView: View {
   @Environment(ListenerModel.self) var listenerModel
     
   @State var selection: String? = nil
+  @State var confirmationText = ""
+  @State var confirmationPresented = false
   
   private func isActive(_ selection: String?) -> Bool {
     if selection == nil {
@@ -44,33 +46,52 @@ struct SDRDaxView: View {
   var body: some View {
     VStack(alignment: .leading) {
       HStack(spacing: 10) {
-        if !store.autoStart {
+        if store.autoStart {
+          // use the default Station
+          Text("Station")
+          if store.autoSelection == nil {
+            Text("NO Default Station").frame(width: 215)
+          } else {
+            Text(nameString(store.autoSelection!)).frame(width: 215)
+            Spacer()
+            Image(systemName: "minus.circle").disabled(selection == nil)
+              .help("REMOVE DEFAULT")
+              .onTapGesture{
+                store.send(.setAutoSelection(nil))
+                confirmationText = "Default Removed"
+                confirmationPresented = true
+              }
+          }
+          
+        } else {
+          // manually choose a Station
           Text("Station")
           Picker("", selection: $selection) {
             Text("none").tag(nil as String?)
             ForEach(listenerModel.stations, id: \.id) {
               Text(nameString($0.id))
-              //                .foregroundColor(isLocal($0.id) ? .green : .red)
                 .tag($0.id as String?)
             }
           }
           .labelsHidden()
           
-          Spacer()
           Image(systemName: "circle.fill").foregroundColor(selection == nil ? .red : .green)
-          
-        } else {
-          //          // There is a default Station
-          Text("Station")
-          //          Text(nameString(store.selectedStation!)).frame(width: 215)
-          //            .foregroundColor(isLocal(store.selectedStation!)  ? .green : .red)
+          Spacer()
+          Image(systemName: "plus.circle").disabled(selection == nil)
+            .help("SAVE DEFAULT")
+            .onTapGesture{
+              store.send(.setAutoSelection(selection!))
+              confirmationText = "Default Saved"
+              confirmationPresented = true
+            }
         }
       }
+      .confirmationDialog(confirmationText, isPresented: $confirmationPresented) {}
       
       DaxSelectionView(store: store, isActive: selection != nil)
       Spacer()
     }
-    
+        
     .onChange(of: listenerModel.stations) {
       if let selection {
         if $1[id: selection] == nil {
@@ -93,20 +114,23 @@ struct SDRDaxView: View {
     
     .toolbar {
       ToolbarItemGroup {
-        VStack(spacing: 0) {
-          Toggle(isOn: $store.smartlinkEnabled) {
-            Text(store.smartlinkEnabled ? "Smartlink" : "Local").frame(width: 60)
+        HStack {
+          Text("Modes")
+          VStack(spacing: 0) {
+            Toggle(isOn: $store.smartlinkEnabled) {
+              Text(store.smartlinkEnabled ? "Smartlink" : "Local").frame(width: 60)
+            }
+            Toggle(isOn: $store.autoStart) {
+              Text(store.autoStart ? "Auto" : "Manual").frame(width: 60)
+            }
           }
-          Toggle(isOn: $store.autoStart) {
-            Text(store.autoStart ? "Auto" : "Manual").frame(width: 60)
-          }
+          .toggleStyle(.button)
+          .controlSize(.small)
         }
-        .toggleStyle(.button)
-        .controlSize(.small)
       }
     }
-    .frame(width: 320)
-    .padding(10)
+//    .frame(minWidth: 370)
+//    .padding(10)
   }
 }
 
