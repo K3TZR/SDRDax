@@ -18,17 +18,17 @@ struct SDRDaxView: View {
       
   @Environment(ListenerModel.self) var listenerModel
     
-  @State var selection: String? = nil
+//  @State var selection: String? = nil
   @State var confirmationText = ""
   @State var confirmationPresented = false
   
-  private func isActive(_ selection: String?) -> Bool {
-    if selection == nil {
-      return false
-    } else {
-      return listenerModel.stations[id: selection!] != nil
-    }
-  }
+//  private func isActive(_ selection: String?) -> Bool {
+//    if selection == nil {
+//      return false
+//    } else {
+//      return listenerModel.stations[id: selection!] != nil
+//    }
+//  }
   
 //  private func components(_ stationId: String) -> [String] {
 //    return stationId.components(separatedBy: "|")
@@ -53,8 +53,11 @@ struct SDRDaxView: View {
             Text("NO Default Station").frame(width: 215)
           } else {
             Text(nameString(store.autoSelection!)).frame(width: 215)
+              .onAppear{
+                store.selection = store.autoSelection
+              }
             Spacer()
-            Image(systemName: "minus.circle").disabled(selection == nil)
+            Image(systemName: "minus.circle").disabled(store.selection == nil)
               .help("REMOVE DEFAULT")
               .onTapGesture{
                 store.send(.setAutoSelection(nil))
@@ -66,7 +69,7 @@ struct SDRDaxView: View {
         } else {
           // manually choose a Station
           Text("Station")
-          Picker("", selection: $selection) {
+          Picker("", selection: $store.selection) {
             Text("none").tag(nil as String?)
             ForEach(listenerModel.stations, id: \.id) {
               Text(nameString($0.id))
@@ -75,12 +78,12 @@ struct SDRDaxView: View {
           }
           .labelsHidden()
           
-          Image(systemName: "circle.fill").foregroundColor(selection == nil ? .red : .green)
+          Image(systemName: "circle.fill").foregroundColor(store.isActive ? .green : .red)
           Spacer()
-          Image(systemName: "plus.circle").disabled(selection == nil)
+          Image(systemName: "plus.circle").disabled(store.selection == nil)
             .help("SAVE DEFAULT")
             .onTapGesture{
-              store.send(.setAutoSelection(selection!))
+              store.send(.setAutoSelection(store.selection!))
               confirmationText = "Default Saved"
               confirmationPresented = true
             }
@@ -88,14 +91,14 @@ struct SDRDaxView: View {
       }
       .confirmationDialog(confirmationText, isPresented: $confirmationPresented) {}
       
-      DaxSelectionView(store: store, isActive: selection != nil)
+      DaxSelectionView(store: store)
       Spacer()
     }
         
     .onChange(of: listenerModel.stations) {
-      if let selection {
+      if let selection = store.selection {
         if $1[id: selection] == nil {
-          self.selection = nil
+          store.selection = nil
         }
       }
     }
@@ -103,6 +106,10 @@ struct SDRDaxView: View {
     // initialize on first appearance
     .onAppear() {
       store.send(.onAppear)
+    }
+    
+    .onDisappear {
+      store.send(.isClosing)
     }
     
     // Alert
@@ -136,7 +143,6 @@ struct SDRDaxView: View {
 
 private struct DaxSelectionView: View {
   @Bindable var store: StoreOf<SDRDaxCore>
-  let isActive: Bool
   
   private func toggleOption(_ option: DaxPanelOptions) {
     if store.daxPanelOptions.contains(option) {
@@ -159,35 +165,40 @@ private struct DaxSelectionView: View {
         }
       }
       
-      if isActive {
-        // scrollview to display selected DAX panels
-        ScrollView {
-          VStack(spacing: 5) {
-            if store.daxPanelOptions.contains(.tx) {
-              DaxTxView(store: store, devices: AudioDevice.getDevices())
-              Divider().frame(height: 3).background(Color(.controlTextColor))
-            }
-            if store.daxPanelOptions.contains(.mic) {
-              DaxMicView(store: store, devices: AudioDevice.getDevices())
-              Divider().frame(height: 3).background(Color(.controlTextColor))
-            }
-            if store.daxPanelOptions.contains(.rx) {
-              ForEach(store.scope(state: \.rxStates, action: \.rxStates)) { store in
-                DaxRxView(store: store, devices: AudioDevice.getDevices())
-              }
-              Divider().frame(height: 3).background(Color(.controlTextColor))
-            }
-            if store.daxPanelOptions.contains(.iq) {
-              ForEach(store.scope(state: \.iqStates, action: \.iqStates)) { store in
-                DaxIqView(store: store, devices: AudioDevice.getDevices())
-              }
-            }
-          }
-        } .scrollIndicators(.visible, axes: .vertical)
+      if store.autoStart && !store.isActive {
+        SpinnerView()
       } else {
-        Spacer()
-        Text("Select a Station")
-        Spacer()
+                
+//        if store.isActive {
+          // scrollview to display selected DAX panels
+          ScrollView {
+            VStack(spacing: 5) {
+              if store.daxPanelOptions.contains(.tx) {
+                DaxTxView(store: store, devices: AudioDevice.getDevices())
+                Divider().frame(height: 3).background(Color(.controlTextColor))
+              }
+              if store.daxPanelOptions.contains(.mic) {
+                DaxMicView(store: store, devices: AudioDevice.getDevices())
+                Divider().frame(height: 3).background(Color(.controlTextColor))
+              }
+              if store.daxPanelOptions.contains(.rx) {
+                ForEach(store.scope(state: \.rxStates, action: \.rxStates)) { store in
+                  DaxRxView(store: store, devices: AudioDevice.getDevices())
+                }
+                Divider().frame(height: 3).background(Color(.controlTextColor))
+              }
+              if store.daxPanelOptions.contains(.iq) {
+                ForEach(store.scope(state: \.iqStates, action: \.iqStates)) { store in
+                  DaxIqView(store: store, devices: AudioDevice.getDevices())
+                }
+              }
+            }
+          } .scrollIndicators(.visible, axes: .vertical)
+//        } else {
+//          Spacer()
+//          Text("Select a Station")
+//          Spacer()
+//        }
       }
     }
   }

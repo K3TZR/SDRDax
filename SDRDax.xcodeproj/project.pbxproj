@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		9FB55E782B81B7CB004AD20E /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB55E772B81B7CB004AD20E /* SettingsView.swift */; };
+		9FB55E7A2B87A2B9004AD20E /* SpinnerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB55E792B87A2B9004AD20E /* SpinnerView.swift */; };
+		9FB55E7C2B87A7D2004AD20E /* SpinnerCore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FB55E7B2B87A7D2004AD20E /* SpinnerCore.swift */; };
 		9FD26D472B698FF800397CBE /* SDRDaxApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D462B698FF800397CBE /* SDRDaxApp.swift */; };
 		9FD26D4B2B698FF900397CBE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9FD26D4A2B698FF900397CBE /* Assets.xcassets */; };
 		9FD26D4E2B698FF900397CBE /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 9FD26D4D2B698FF900397CBE /* Preview Assets.xcassets */; };
@@ -37,6 +39,8 @@
 
 /* Begin PBXFileReference section */
 		9FB55E772B81B7CB004AD20E /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		9FB55E792B87A2B9004AD20E /* SpinnerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerView.swift; sourceTree = "<group>"; };
+		9FB55E7B2B87A7D2004AD20E /* SpinnerCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpinnerCore.swift; sourceTree = "<group>"; };
 		9FD26D432B698FF800397CBE /* SDRDax.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SDRDax.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		9FD26D462B698FF800397CBE /* SDRDaxApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDRDaxApp.swift; sourceTree = "<group>"; };
 		9FD26D4A2B698FF900397CBE /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -111,6 +115,8 @@
 				9FD26D552B69906D00397CBE /* SDRDaxCore.swift */,
 				9FD26D6E2B69919700397CBE /* SDRDaxView.swift */,
 				9FB55E772B81B7CB004AD20E /* SettingsView.swift */,
+				9FB55E792B87A2B9004AD20E /* SpinnerView.swift */,
+				9FB55E7B2B87A7D2004AD20E /* SpinnerCore.swift */,
 			);
 			path = SDRDax;
 			sourceTree = "<group>";
@@ -242,6 +248,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				9FD26D6F2B69919700397CBE /* SDRDaxView.swift in Sources */,
+				9FB55E7C2B87A7D2004AD20E /* SpinnerCore.swift in Sources */,
 				9FD26D7E2B6998B000397CBE /* DaxMicView.swift in Sources */,
 				9FD26D7C2B6998B000397CBE /* DaxTxView.swift in Sources */,
 				9FD26D562B69906D00397CBE /* SDRDaxCore.swift in Sources */,
@@ -251,6 +258,7 @@
 				9FD26D472B698FF800397CBE /* SDRDaxApp.swift in Sources */,
 				9FD26D8A2B6E95CD00397CBE /* DaxRxCore.swift in Sources */,
 				9FD26D922B6EA9CF00397CBE /* DaxIqCore.swift in Sources */,
+				9FB55E7A2B87A2B9004AD20E /* SpinnerView.swift in Sources */,
 				9FB55E782B81B7CB004AD20E /* SettingsView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

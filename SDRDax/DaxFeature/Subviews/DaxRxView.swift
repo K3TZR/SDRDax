@@ -30,7 +30,7 @@ struct DaxRxView: View {
 
           Toggle(isOn: $store.isOn) { Text("Rx\(store.channel)").frame(width:30) }
             .toggleStyle(.button)
-            .disabled(store.audioPlayer.deviceId == nil /* || store.sliceLetter == nil */)
+            .disabled(store.deviceId == nil /* || store.sliceLetter == nil */)
 
           Spacer()
           Text(store.sliceLetter == nil ? "No Slice" : store.sliceLetter!)
@@ -42,7 +42,7 @@ struct DaxRxView: View {
             
             GridRow {
               Text("Output Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.audioPlayer.deviceId) {
+              Picker("", selection: $store.deviceId) {
                 Text("none").tag(nil as AudioDeviceID?)
                 ForEach(devices, id: \.id) {
                   if $0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
@@ -54,15 +54,30 @@ struct DaxRxView: View {
             GridRow {
               HStack {
                 Text("Gain")
-                Text("\(Int(store.audioPlayer.gain))").frame(width: 40, alignment: .trailing)
+                Text("\(Int(store.gain))").frame(width: 40, alignment: .trailing)
               }
-              Slider(value: $store.audioPlayer.gain, in: 0...100, label: {
+              Slider(value: $store.gain, in: 0...100, label: {
               })
             }
           }
-          LevelIndicatorView(levels: store.audioPlayer.levels, type: .dax)
+          if store.audioOutput != nil {
+            LevelIndicatorView(levels: store.audioOutput!.levels, type: .dax)
+          } else {
+            LevelIndicatorView(levels: SignalLevel(rms: -40, peak: -40), type: .dax)
+          }
         }
       }
+      
+      // monitor isActive
+      .onChange(of: store.isActive) {
+        store.send(.isActiveChanged)
+      }
+      
+      // monitor closing
+      .onDisappear {
+        store.send(.onDisappear)
+      }
+      
     }.frame(width: 320)
   }
 }
@@ -70,7 +85,7 @@ struct DaxRxView: View {
 
 #Preview {
   DaxRxView(
-    store: Store(initialState: DaxRxCore.State(audioPlayer: DaxAudioPlayer(), channel: 1)) {
+    store: Store(initialState: DaxRxCore.State(isActive: true, channel: 1, gain: 50)) {
       DaxRxCore()
     }, devices: AudioDevice.getDevices()
   )

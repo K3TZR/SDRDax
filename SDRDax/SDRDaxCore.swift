@@ -18,7 +18,7 @@ import SharedFeature
 import XCGLogFeature
 
 // struct for use in Dax settings
-public struct DaxChannel: Identifiable, Equatable {
+public struct OutputChannel: Identifiable, Equatable {
   public init(channel: Int, isOn: Bool = false, showDetails: Bool = false, sliceLetter: String? = nil, status: String = "Off", sampleRate: Int = 24_000) {
     self.channel = channel
     self.isOn = isOn
@@ -82,7 +82,6 @@ public struct SDRDaxCore {
     // persistent
     var autoStart = false                           {didSet { AppDefaults.set(autoStart, forKey: "autoStart")}}
     var daxPanelOptions: DaxPanelOptions = []       {didSet { AppDefaults.set(daxPanelOptions.rawValue, forKey: "daxPanelOptions")}}
-//    var localEnabled = true                         {didSet { AppDefaults.set(localEnabled, forKey: "localEnabled")}}
     var lowBandwidthDax = false                     {didSet { AppDefaults.set(lowBandwidthDax, forKey: "lowBandwidthDax")}}
     var mtuValue = 1_300                            {didSet { AppDefaults.set(mtuValue, forKey: "mtuValue")}}
     var previousIdToken: String?                    {didSet { AppDefaults.set(previousIdToken, forKey: "previousIdToken")}}
@@ -98,14 +97,6 @@ public struct SDRDaxCore {
     var selection: String? = nil
     var isActive = false
     
-//    var isActive: Bool {
-//      if selectedStation == nil {
-//        return false
-//      } else {
-//        return ListenerModel.shared.stations[id: selectedStation!] != nil
-//      }
-//    }
-
     var iqStates: IdentifiedArrayOf<DaxIqCore.State> = [
       DaxIqCore.State(
         channel: 1,
@@ -141,50 +132,43 @@ public struct SDRDaxCore {
       ),
 
     ]
-    var daxMic = DaxChannel(channel: 0)
+    var daxMic = OutputChannel(channel: 0)
     
-//    var daxDevices = [
-//      DaxAudioPlayer(),     // Mic
-//      DaxAudioPlayer(),     // Rx1
-//      DaxAudioPlayer(),     // Rx2
-//      DaxAudioPlayer(),     // Rx3
-//      DaxAudioPlayer(),     // Rx4
-//    ]
     var rxStates: IdentifiedArrayOf<DaxRxCore.State> = [
-//      DaxRxCore.State(daxState: DaxState(channel: 1)),
-//      DaxRxCore.State(daxState: DaxState(channel: 2)),
-//      DaxRxCore.State(daxState: DaxState(channel: 3)),
-//      DaxRxCore.State(daxState: DaxState(channel: 4))
       DaxRxCore.State(
-        audioPlayer: DaxAudioPlayer(),
+        isActive: false,
         channel: 1,
+        gain: 50,
         isOn: false,
         showDetails: false,
         sliceLetter: nil
       ),
       DaxRxCore.State(
-        audioPlayer: DaxAudioPlayer(),
+        isActive: false,
         channel: 2,
+        gain: 50,
         isOn: false,
         showDetails: false,
         sliceLetter: nil
       ),
       DaxRxCore.State(
-        audioPlayer: DaxAudioPlayer(),
+        isActive: false,
         channel: 3,
+        gain: 50,
         isOn: false,
         showDetails: false,
         sliceLetter: nil
       ),
       DaxRxCore.State(
-        audioPlayer: DaxAudioPlayer(),
+        isActive: false,
         channel: 4,
+        gain: 50,
         isOn: false,
         showDetails: false,
         sliceLetter: nil
       ),
     ]
-    var daxTx = DaxChannel(channel: 0)
+    var daxTx = OutputChannel(channel: 0)
 
     @Presents var showAlert: AlertState<Action.Alert>?
     @Presents var showLogin: LoginFeature.State?
@@ -195,8 +179,9 @@ public struct SDRDaxCore {
   
   public enum Action: BindableAction {
     case binding(BindingAction<State>)
+    case connect
+    case isClosing
     case onAppear
-    case stationsChanged
     case setAutoSelection(String?)
     
     // subview actions
@@ -212,7 +197,7 @@ public struct SDRDaxCore {
     // navigation actions
     case alert(PresentationAction<Alert>)
     case login(PresentationAction<LoginFeature.Action>)
-    
+
     // alert sub-actions
     public enum Alert : String {
       case connectFailed = "Connect FAILED"
@@ -248,17 +233,18 @@ public struct SDRDaxCore {
         // perform initialization
         return .concatenate( initState(&state))
         
+      case .connect:
+        return connect(state)
+        
+      case .isClosing:
+        if state.connectionState == .connected {
+          print("isClosing")
+//          return daxStopAll(&state)
+        }
+        return .none
+        
       case let .setAutoSelection(selection):
         state.autoSelection = selection
-        return .none
-
-      case .stationsChanged:
-        print("stationsChanged")
-        if state.selection == nil {
-          state.isActive = false
-        } else {
-          state.isActive = ListenerModel.shared.stations[id: state.selection!] != nil
-        }
         return .none
                 
         // ----------------------------------------------------------------------------
@@ -272,14 +258,16 @@ public struct SDRDaxCore {
         }
 
       case .binding(\.selection):
-        print("Selection = \(state.selection)")
         if state.selection == nil {
-          state.isActive = false
+          if state.isActive {
+            state.isActive = false
+            return disconnect()
+          }
         } else {
           state.isActive = ListenerModel.shared.stations[id: state.selection!] != nil
+          if state.isActive { return connect(state) }
         }
         return .none
-
 
       case .binding(_):
         return .none
@@ -373,23 +361,23 @@ public struct SDRDaxCore {
         // ----------------------------------------------------------------------------
         // MARK: - Dax RX Actions
         
-      case let .rxStates(.element(channel, .binding(\.audioPlayer))):
-        if state.rxStates[id: channel]?.audioPlayer.deviceId == nil {
-          // STOP when device removed
-          return daxStop(&state, channels: [channel])
-        }
-        return .none
+//      case let .rxStates(.element(channel, .binding(\.isOn))):
+//        // if already connected, Start/Stop a channel
+//        if state.connectionState == .connected {
+//          if state.rxStates[id: channel]!.isOn {
+//            return daxStart(&state, channels: [channel])
+//          } else {
+//            return daxStop(&state, channels: [channel])
+//          }
+//        }
+//        return .none
 
-      case let .rxStates(.element(channel, .binding(\.isOn))):
-        // if already connected, Start/Stop a channel
-        if state.connectionState == .connected {
-          if state.rxStates[id: channel]!.isOn {
-            return daxStart(&state, channels: [channel])
-          } else {
-            return daxStop(&state, channels: [channel])
-          }
-        }
-        return .none
+//      case let .rxStates(.element(channel, .binding(\.audioOutput))):
+//        if state.rxStates[id: channel]?.audioOutput.deviceId == nil {
+//          // STOP when device removed
+//          return daxStop(&state, channels: [channel])
+//        }
+//        return .none
 
       case .rxStates(_):
         return .none
@@ -412,8 +400,8 @@ public struct SDRDaxCore {
   // ----------------------------------------------------------------------------
   // MARK: - Connection effect methods
   
-  private func connect(_ state: State, _ selection: String?) -> Effect<SDRDaxCore.Action> {
-    if let selection {
+  private func connect(_ state: State) -> Effect<SDRDaxCore.Action> {
+    if let selection = state.selection {
       ListenerModel.shared.setActive(false, selection, false)
       return .run {
         // attempt to connect to the selected Radio / Station
@@ -436,16 +424,7 @@ public struct SDRDaxCore {
     return .none
   }
   
-  private func connectionStartLocalSmartlink(_ state: State) -> Effect<SDRDaxCore.Action> {
-    // is there a valid Default?
-    if ListenerModel.shared.isValidDefault(for: nil, state.selection, false) {
-      // YES, valid default
-      return connect( state, state.selection)
-    }
-    return .none
-  }
-  
-  private func connectionStop() -> Effect<SDRDaxCore.Action> {
+  private func disconnect() -> Effect<SDRDaxCore.Action> {
     return .run {
       await ApiModel.shared.disconnect()
       await $0(.connectionStatus(.disconnected))
@@ -456,7 +435,10 @@ public struct SDRDaxCore {
     switch status {
     case .connected:
       state.connectionState = .connected
-      return daxStartAll(&state)
+      for i in 1...4 {
+        state.rxStates[id: i]!.isActive = true
+      }
+      return .none
       
     case .errorOnConnect:
       state.connectionState = .disconnected
@@ -466,18 +448,25 @@ public struct SDRDaxCore {
       
     case .disconnected:
       state.connectionState = .disconnected
-      return daxStopAll(&state)
-      
+      for i in 1...4 {
+        state.rxStates[id: i]!.isActive = false
+      }
+      return .none
+
     case .errorOnDisconnect:
       state.connectionState = .disconnected
+      for i in 1...4 {
+        state.rxStates[id: i]!.isActive = false
+      }
       return .run {
         await $0(.showAlert(.disconnectFailed, ""))
       }
-    case .connecting:
+    
+    case .connecting:                           // is this needed ????
       state.connectionState = .connecting
       return .none
       
-    case .disconnecting:
+    case .disconnecting:                        // is this needed ????
       state.connectionState = .disconnecting
       return .none
     }
@@ -486,58 +475,58 @@ public struct SDRDaxCore {
   // ----------------------------------------------------------------------------
   // MARK: - DAX effect methods
   
-  private func daxStart(_ state: inout State, channels: [Int]) -> Effect<SDRDaxCore.Action> {
-    for channel in channels {
-      state.rxStates[id: channel]?.status = "Streaming"
-    }
-    return .run { [state, channels] _ in
-      for channel in channels {
-        // request a stream
-        if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: channel).streamId {
-          // finish audio setup
-          state.rxStates[id: channel]?.audioPlayer.start(streamId)
-          await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.rxStates[id: channel]?.audioPlayer
-          log("DaxAudioPlayer: STARTED, channel = \(channel)", .debug, #function, #file, #line)
-
-        } else {
-          // FAILURE, tell the user it failed
-          //      alertText = "Failed to start a RemoteRxAudioStream"
-          //      showAlert = true
-          fatalError("Failed to start a RemoteRxAudioStream")
-        }
-      }
-    }
-  }
-  
-  private func daxStartAll(_ state: inout State) -> Effect<SDRDaxCore.Action> {
-    var channels = [Int]()
-    for rxState in state.rxStates where rxState.isOn {
-      channels.append(rxState.channel)
-    }
-    return daxStart(&state, channels: channels)
-  }
-  
-  private func daxStop(_ state: inout State, channels: [Int]) -> Effect<SDRDaxCore.Action> {
-    var streamIds = [UInt32?]()
-    for channel in channels {
-      state.rxStates[id: channel]?.status = "Off"
-      streamIds.append(state.rxStates[id: channel]?.audioPlayer.streamId)
-      state.rxStates[id: channel]?.audioPlayer.stop()
-      log("DaxAudioPlayer: STOPPED, channel = \(channel)", .debug, #function, #file, #line)
-    }
-    return .run { [streamIds] _ in
-      // remove stream(s)
-      await ApiModel.shared.sendRemoveStreams(streamIds)
-    }
-  }
-  
-  private func daxStopAll(_ state: inout State) -> Effect<SDRDaxCore.Action> {
-    var channels = [Int]()
-    for rxState in state.rxStates where rxState.isOn {
-      channels.append(rxState.channel)
-    }
-    return daxStop(&state, channels: channels)
-  }
+//  private func daxStart(_ state: inout State, channels: [Int]) -> Effect<SDRDaxCore.Action> {
+//    for channel in channels {
+//      state.rxStates[id: channel]?.status = "Streaming"
+//    }
+//    return .run { [state, channels] _ in
+//      for channel in channels {
+//        // request a stream
+//        if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: channel).streamId {
+//          // finish audio setup
+//          state.rxStates[id: channel]?.audioOutput.start(streamId)
+//          await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.rxStates[id: channel]?.audioOutput
+//          log("DaxAudioPlayer: STARTED, channel = \(channel)", .debug, #function, #file, #line)
+//
+//        } else {
+//          // FAILURE, tell the user it failed
+//          //      alertText = "Failed to start a RemoteRxAudioStream"
+//          //      showAlert = true
+//          fatalError("Failed to start a RemoteRxAudioStream")
+//        }
+//      }
+//    }
+//  }
+//  
+//  private func daxStartAll(_ state: inout State) -> Effect<SDRDaxCore.Action> {
+//    var channels = [Int]()
+//    for rxState in state.rxStates where rxState.isOn {
+//      channels.append(rxState.channel)
+//    }
+//    return daxStart(&state, channels: channels)
+//  }
+//  
+//  private func daxStop(_ state: inout State, channels: [Int]) -> Effect<SDRDaxCore.Action> {
+//    var streamIds = [UInt32?]()
+//    for channel in channels {
+//      state.rxStates[id: channel]?.status = "Off"
+//      streamIds.append(state.rxStates[id: channel]?.audioOutput.streamId)
+//      state.rxStates[id: channel]?.audioOutput.stop()
+//      log("DaxAudioPlayer: STOPPED, channel = \(channel)", .debug, #function, #file, #line)
+//    }
+//    return .run { [streamIds] _ in
+//      // remove stream(s)
+//      await ApiModel.shared.sendRemoveStreams(streamIds)
+//    }
+//  }
+//  
+//  private func daxStopAll(_ state: inout State) -> Effect<SDRDaxCore.Action> {
+//    var channels = [Int]()
+//    for rxState in state.rxStates where rxState.isOn {
+//      channels.append(rxState.channel)
+//    }
+//    return daxStop(&state, channels: channels)
+//  }
   
   // ----------------------------------------------------------------------------
   // MARK: - Initialization effect methods
@@ -547,7 +536,6 @@ public struct SDRDaxCore {
       
       state.autoStart = UserDefaults.standard.bool(forKey: "autoStart")
       state.daxPanelOptions = DaxPanelOptions(rawValue: UInt8(UserDefaults.standard.integer(forKey: "daxPanelOptions")))
-//      state.localEnabled = UserDefaults.standard.bool(forKey: "localEnabled")
       state.lowBandwidthDax = UserDefaults.standard.bool(forKey: "lowBandwidthDax")
       state.mtuValue = UserDefaults.standard.integer(forKey: "mtuValue")
       state.previousIdToken = UserDefaults.standard.string(forKey: "previousIdToken")
@@ -583,7 +571,6 @@ public struct SDRDaxCore {
   
   private func localListenerStop() -> Effect<SDRDaxCore.Action> {
     ListenerModel.shared.localMode(false)
-//    ListenerModel.shared.removePackets(condition: {$0.source == .local})
     return .none
   }
   
@@ -613,7 +600,6 @@ public struct SDRDaxCore {
   
   private func smartlinkListenerStop() -> Effect<SDRDaxCore.Action> {
     ListenerModel.shared.smartlinkStop()
-//    ListenerModel.shared.removePackets(condition: {$0.source == .smartlink})
     return .none
   }
     
@@ -629,40 +615,40 @@ public struct SDRDaxCore {
 // ----------------------------------------------------------------------------
 // MARK: - Extensions
 
-extension UserDefaults {
-  /// Read a user default entry and decode it into a struct
-  /// - Parameters:
-  ///    - key:         the name of the user default
-  /// - Returns:        a struct (or nil)
-  public class func getStructFromSettings<T: Decodable>(_ key: String, defaults: UserDefaults) -> T? {
-    
-    if let data = defaults.object(forKey: key) as? Data {
-      let decoder = JSONDecoder()
-      if let value = try? decoder.decode(T.self, from: data) {
-        return value
-      } else {
-        return nil
-      }
-    }
-    return nil
-  }
-  
-  /// Encode a struct and write it to a user default
-  /// - Parameters:
-  ///    - key:        the name of the user default
-  ///    - value:      a struct  to be encoded (or nil)
-  public class func saveStructToSettings<T: Encodable>(_ key: String, _ value: T?, defaults: UserDefaults) {
-    
-    if value == nil {
-      defaults.removeObject(forKey: key)
-    } else {
-      let encoder = JSONEncoder()
-      if let encoded = try? encoder.encode(value) {
-        defaults.set(encoded, forKey: key)
-      } else {
-        defaults.removeObject(forKey: key)
-      }
-    }
-  }
-
-}
+//extension UserDefaults {
+//  /// Read a user default entry and decode it into a struct
+//  /// - Parameters:
+//  ///    - key:         the name of the user default
+//  /// - Returns:        a struct (or nil)
+//  public class func getStructFromSettings<T: Decodable>(_ key: String, defaults: UserDefaults) -> T? {
+//    
+//    if let data = defaults.object(forKey: key) as? Data {
+//      let decoder = JSONDecoder()
+//      if let value = try? decoder.decode(T.self, from: data) {
+//        return value
+//      } else {
+//        return nil
+//      }
+//    }
+//    return nil
+//  }
+//  
+//  /// Encode a struct and write it to a user default
+//  /// - Parameters:
+//  ///    - key:        the name of the user default
+//  ///    - value:      a struct  to be encoded (or nil)
+//  public class func saveStructToSettings<T: Encodable>(_ key: String, _ value: T?, defaults: UserDefaults) {
+//    
+//    if value == nil {
+//      defaults.removeObject(forKey: key)
+//    } else {
+//      let encoder = JSONEncoder()
+//      if let encoded = try? encoder.encode(value) {
+//        defaults.set(encoded, forKey: key)
+//      } else {
+//        defaults.removeObject(forKey: key)
+//      }
+//    }
+//  }
+//
+//}
