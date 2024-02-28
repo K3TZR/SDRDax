@@ -28,10 +28,12 @@ struct DaxTxView: View {
             .help("Show / Hide Details")
           Toggle(isOn: $store.daxTx.isOn) { Text("TX").frame(width: 30) }
             .toggleStyle(.button)
+          
           Spacer()
-          Text("Status")
-          Text(store.daxTx.status).frame(width: 150)
-        }.frame(width: 320)
+          Text("Status").frame(width: 90)
+          Text(store.daxTx.status).frame(width: 140)
+        }
+//        .frame(width: 320)
 
         if store.daxTx.showDetails{
           Grid(alignment: .topLeading, horizontalSpacing: 10) {
@@ -58,7 +60,8 @@ struct DaxTxView: View {
           }
         }
       }
-    }.frame(width: 320)
+    }
+//    .frame(width: 320)
 //    .groupBoxStyle(PlainGroupBoxStyle())
   }
 }

@@ -17,7 +17,6 @@ struct DaxIqView: View {
   let devices: [AudioDevice]
   
   private let rates = [24_000, 48_000, 96_000, 192_000]
-  @State var showDetails = true
   
   var body: some View {
 
@@ -32,13 +31,14 @@ struct DaxIqView: View {
           Toggle(isOn: $store.isOn) { Text("Iq\(store.channel)").frame(width: 30) }
             .toggleStyle(.button)
             .disabled(store.device == nil)
+          
           Spacer()
-          Text("\(String(format: "%2.6f", store.frequency ?? 0))")
-            .opacity( store.frequency == nil ? 0 : 1)
-            .frame(width: 150)
-        }.frame(width: 320)
+          Text("\(store.frequency == nil ? "No Pan" : String(format: "%2.6f", store.frequency!))")
+            .frame(width: 90)
+          Text(store.status).frame(width: 140)
+        }
 
-        if showDetails {
+        if store.showDetails {
           Grid(alignment: .leading, horizontalSpacing: 10) {
             GridRow {
               Text("Rate")
@@ -61,18 +61,24 @@ struct DaxIqView: View {
               }
               .labelsHidden()
             }
-
           }
         }
       }
     }
-    .frame(width: 320)
+//    .frame(width: 320)
   }
 }
 
 #Preview {
   DaxIqView(
-    store: Store(initialState: DaxIqCore.State(channel: 1)) {
+    store: Store(initialState: DaxIqCore.State(channel: 1,
+                                               device: nil,
+                                               frequency: nil,
+                                               isActive: false,
+                                               isOn: false,
+                                               sampleRate: 24_000,
+                                               showDetails: false))
+    {
       DaxIqCore()
     }, devices: AudioDevice.getDevices()
   )

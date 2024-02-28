@@ -16,7 +16,13 @@ import SharedFeature
 struct DaxRxView: View {
   @Bindable var store: StoreOf<DaxRxCore>
   let devices: [AudioDevice]
+  
       
+  private var buttonLabel: String {
+    if store.channel == 0 { return "Mic"}
+    return "Rx\(store.channel)"
+  }
+  
   var body: some View {
     
     GroupBox {
@@ -28,14 +34,15 @@ struct DaxRxView: View {
             }
             .help("Show / Hide Details")
 
-          Toggle(isOn: $store.isOn) { Text("Rx\(store.channel)").frame(width:30) }
+          Toggle(isOn: $store.isOn) { Text(buttonLabel).frame(width:30) }
             .toggleStyle(.button)
             .disabled(store.deviceId == nil /* || store.sliceLetter == nil */)
 
           Spacer()
           Text(store.sliceLetter == nil ? "No Slice" : store.sliceLetter!)
-          Text(store.status).frame(width: 150)
-        }.frame(width: 320)
+            .frame(width: 90)
+          Text(store.status).frame(width: 140)
+        }
         
         if store.showDetails {
           Grid(alignment: .leading, horizontalSpacing: 10) {
@@ -69,25 +76,24 @@ struct DaxRxView: View {
       }
       
       // monitor isActive
-      .onChange(of: store.isActive) {
+      .onChange(of: store.stationIsActive) {
         store.send(.isActiveChanged)
       }
-      
+            
       // monitor closing
       .onDisappear {
         store.send(.onDisappear)
       }
-      
-    }.frame(width: 320)
+    }
   }
 }
 
 
-#Preview {
-  DaxRxView(
-    store: Store(initialState: DaxRxCore.State(isActive: true, channel: 1, gain: 50)) {
-      DaxRxCore()
-    }, devices: AudioDevice.getDevices()
-  )
-  .frame(width: 320)
-}
+//#Preview {
+//  DaxRxView(
+//    store: Store(initialState: DaxRxCore.State(DaxRxChannel(channel: 1, gain: 50, isOn: false, showDetails: true), stationIsActive: Shared(false))) {
+//      DaxRxCore()
+//    }, devices: AudioDevice.getDevices()
+//  )
+//  .frame(width: 320)
+//}

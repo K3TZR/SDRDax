@@ -24,11 +24,15 @@ public struct DaxIqCore {
     let channel: Int
     var device: UInt32?
     var frequency: Double?
-    var isOn: Bool = false
+    var isActive = false
+    var isOn = false
     var sampleRate = 24_000
-    var showDetails = true
-    
+    var showDetails = false
+    var status = "Off"
+
     public var id: Int { channel }
+
+    var audioOutput: DaxAudioPlayer?
   }
   
   // ----------------------------------------------------------------------------
@@ -44,4 +48,6 @@ public struct DaxIqCore {
   public var body: some ReducerOf<Self> {
     BindingReducer()
   }
+  
+  // FIXME: Stream ????
 }

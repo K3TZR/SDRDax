@@ -18,25 +18,8 @@ struct SDRDaxView: View {
       
   @Environment(ListenerModel.self) var listenerModel
     
-//  @State var selection: String? = nil
   @State var confirmationText = ""
   @State var confirmationPresented = false
-  
-//  private func isActive(_ selection: String?) -> Bool {
-//    if selection == nil {
-//      return false
-//    } else {
-//      return listenerModel.stations[id: selection!] != nil
-//    }
-//  }
-  
-//  private func components(_ stationId: String) -> [String] {
-//    return stationId.components(separatedBy: "|")
-//  }
-  
-//  private func isLocal(_ id: String) -> Bool {
-//   id.components(separatedBy: "|")[4] == "Local"
-//  }
   
   private func nameString(_ id: String) -> String {
     let components = id.components(separatedBy: "|")
@@ -78,7 +61,7 @@ struct SDRDaxView: View {
           }
           .labelsHidden()
           
-          Image(systemName: "circle.fill").foregroundColor(store.isActive ? .green : .red)
+          Image(systemName: "circle.fill").foregroundColor(store.stationFound ? .green : .red)
           Spacer()
           Image(systemName: "plus.circle").disabled(store.selection == nil)
             .help("SAVE DEFAULT")
@@ -108,10 +91,6 @@ struct SDRDaxView: View {
       store.send(.onAppear)
     }
     
-    .onDisappear {
-      store.send(.isClosing)
-    }
-    
     // Alert
     .alert($store.scope(state: \.showAlert, action: \.alert))
     
@@ -136,8 +115,6 @@ struct SDRDaxView: View {
         }
       }
     }
-//    .frame(minWidth: 370)
-//    .padding(10)
   }
 }
 
@@ -165,40 +142,36 @@ private struct DaxSelectionView: View {
         }
       }
       
-      if store.autoStart && !store.isActive {
+      if store.autoStart && !store.stationFound {
         SpinnerView()
       } else {
-                
-//        if store.isActive {
-          // scrollview to display selected DAX panels
-          ScrollView {
-            VStack(spacing: 5) {
-              if store.daxPanelOptions.contains(.tx) {
-                DaxTxView(store: store, devices: AudioDevice.getDevices())
-                Divider().frame(height: 3).background(Color(.controlTextColor))
+        
+        // scrollview to display selected DAX panels
+        ScrollView {
+          VStack(spacing: 5) {
+            if store.daxPanelOptions.contains(.tx) {
+              DaxTxView(store: store, devices: AudioDevice.getDevices())
+              Divider().frame(height: 3).background(Color(.controlTextColor))
+            }
+            if store.daxPanelOptions.contains(.mic) {
+              ForEach(store.scope(state: \.micStates, action: \.micStates)) { store in
+                DaxRxView(store: store, devices: AudioDevice.getDevices())
               }
-              if store.daxPanelOptions.contains(.mic) {
-                DaxMicView(store: store, devices: AudioDevice.getDevices())
-                Divider().frame(height: 3).background(Color(.controlTextColor))
+              Divider().frame(height: 3).background(Color(.controlTextColor))
+            }
+            if store.daxPanelOptions.contains(.rx) {
+              ForEach(store.scope(state: \.rxStates, action: \.rxStates)) { store in
+                DaxRxView(store: store, devices: AudioDevice.getDevices())
               }
-              if store.daxPanelOptions.contains(.rx) {
-                ForEach(store.scope(state: \.rxStates, action: \.rxStates)) { store in
-                  DaxRxView(store: store, devices: AudioDevice.getDevices())
-                }
-                Divider().frame(height: 3).background(Color(.controlTextColor))
-              }
-              if store.daxPanelOptions.contains(.iq) {
-                ForEach(store.scope(state: \.iqStates, action: \.iqStates)) { store in
-                  DaxIqView(store: store, devices: AudioDevice.getDevices())
-                }
+              Divider().frame(height: 3).background(Color(.controlTextColor))
+            }
+            if store.daxPanelOptions.contains(.iq) {
+              ForEach(store.scope(state: \.iqStates, action: \.iqStates)) { store in
+                DaxIqView(store: store, devices: AudioDevice.getDevices())
               }
             }
-          } .scrollIndicators(.visible, axes: .vertical)
-//        } else {
-//          Spacer()
-//          Text("Select a Station")
-//          Spacer()
-//        }
+          }
+        } .scrollIndicators(.visible, axes: .vertical)
       }
     }
   }
