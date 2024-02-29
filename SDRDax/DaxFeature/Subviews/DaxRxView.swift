@@ -10,6 +10,7 @@ import ComposableArchitecture
 import SwiftUI
 
 import DaxAudioFeature
+import FlexApiFeature
 import LevelIndicatorView
 import SharedFeature
 
@@ -22,6 +23,13 @@ struct DaxRxView: View {
     if store.channel == 0 { return "Mic"}
     return "Rx\(store.channel)"
   }
+  
+//  private var sliceLetter: String {
+//    for slice in ApiModel.shared.slices where slice.daxChannel == store.channel {
+//      return slice.sliceLetter
+//    }
+//    return "NO Slice"
+//  }
   
   var body: some View {
     
@@ -39,7 +47,7 @@ struct DaxRxView: View {
             .disabled(store.deviceId == nil /* || store.sliceLetter == nil */)
 
           Spacer()
-          Text(store.sliceLetter == nil ? "No Slice" : store.sliceLetter!)
+          Text("????")
             .frame(width: 90)
           Text(store.status).frame(width: 140)
         }
@@ -76,7 +84,8 @@ struct DaxRxView: View {
       }
       
       // monitor isActive
-      .onChange(of: store.stationIsActive) {
+      .onChange(of: store.isActive) {
+        print("-----> onChange isActive = \(store.isActive)")
         store.send(.isActiveChanged)
       }
             

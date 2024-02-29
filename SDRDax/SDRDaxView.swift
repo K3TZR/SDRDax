@@ -61,7 +61,7 @@ struct SDRDaxView: View {
           }
           .labelsHidden()
           
-          Image(systemName: "circle.fill").foregroundColor(store.stationFound ? .green : .red)
+          Image(systemName: "circle.fill").foregroundColor(store.isActive ? .green : .red)
           Spacer()
           Image(systemName: "plus.circle").disabled(store.selection == nil)
             .help("SAVE DEFAULT")
@@ -142,7 +142,7 @@ private struct DaxSelectionView: View {
         }
       }
       
-      if store.autoStart && !store.stationFound {
+      if store.autoStart && !store.isActive {
         SpinnerView()
       } else {
         
@@ -161,14 +161,21 @@ private struct DaxSelectionView: View {
             }
             if store.daxPanelOptions.contains(.rx) {
               ForEach(store.scope(state: \.rxStates, action: \.rxStates)) { store in
-                DaxRxView(store: store, devices: AudioDevice.getDevices())
+                VStack(spacing: 5) {
+                  DaxRxView(store: store, devices: AudioDevice.getDevices())
+                  Divider().background(Color(.blue))
+                }
               }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
             if store.daxPanelOptions.contains(.iq) {
               ForEach(store.scope(state: \.iqStates, action: \.iqStates)) { store in
-                DaxIqView(store: store, devices: AudioDevice.getDevices())
+                VStack(spacing: 5) {
+                  DaxIqView(store: store, devices: AudioDevice.getDevices())
+                  Divider().background(Color(.blue))
+                }
               }
+              Divider().frame(height: 3).background(Color(.controlTextColor))
             }
           }
         } .scrollIndicators(.visible, axes: .vertical)

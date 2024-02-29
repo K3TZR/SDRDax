@@ -34,9 +34,9 @@ public struct DaxRxCore {
 
     public var id: Int { channel }
 
-    @Shared var stationIsActive: Bool
-    
     var audioOutput: DaxAudioPlayer?
+    
+    @Shared var isActive: Bool
   }
   
   // ----------------------------------------------------------------------------
@@ -62,19 +62,20 @@ public struct DaxRxCore {
         
       case .onDisappear:
         print("--->>> Channel: onDisappear")
-        if state.isOn && state.stationIsActive {
+        state.isActive = false
+        if state.isOn && state.isActive {
           return daxStop(&state)
         }
         return .none
 
       case .isActiveChanged:
-        print("--->>> Channel: isActiveChanged = \(state.stationIsActive)")
+        print("--->>> Channel: isActiveChanged = \(state.isActive)")
         state.audioOutput?.gain = state.gain
-        if state.stationIsActive && state.isOn {
+        if state.isActive && state.isOn {
           return daxStart(&state)
         }
         
-        if !state.stationIsActive && state.isOn {
+        if !state.isActive && state.isOn {
           return daxStop(&state)
         }
         return .none
@@ -82,17 +83,17 @@ public struct DaxRxCore {
         // ----------------------------------------------------------------------------
         // MARK: - Binding Actions
         
-      case .binding(\.stationIsActive):
-        print("--->>> Channel: stationIsActive = \(state.stationIsActive)")
-        state.audioOutput?.gain = state.gain
-        if state.stationIsActive && state.isOn {
-          return daxStart(&state)
-        }
-        
-        if !state.stationIsActive && state.isOn {
-          return daxStop(&state)
-        }
-        return .none
+//      case .binding(\.isActive):
+//        print("--->>> Channel: stationIsActive = \(state.isActive)")
+//        state.audioOutput?.gain = state.gain
+//        if state.isActive && state.isOn {
+//          return daxStart(&state)
+//        }
+//        
+//        if !state.isActive && state.isOn {
+//          return daxStop(&state)
+//        }
+//        return .none
         
       case .binding(\.deviceId):
         print("--->>> Channel: Id = \(state.deviceId)")
@@ -106,10 +107,10 @@ public struct DaxRxCore {
         
       case .binding(\.isOn):
         print("--->>> Channel: isOn = \(state.isOn)")
-        if state.isOn && state.stationIsActive {
+        if state.isOn && state.isActive {
             return daxStart(&state)
         }
-        if !state.isOn && state.stationIsActive {
+        if !state.isOn && state.isActive {
             return daxStop(&state)
         }
         return .none
@@ -133,14 +134,12 @@ public struct DaxRxCore {
   
   private func daxStart(_ state: inout State) -> Effect<DaxRxCore.Action> {
     state.audioOutput = DaxAudioPlayer()
-    state.audioOutput?.deviceId = state.deviceId
-    state.audioOutput?.gain = state.gain
     state.status = "Streaming"
     return .run { [state] _ in
       // request a stream
       if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.channel).streamId {     // FIXME: Mic Stream
         // finish audio setup
-        state.audioOutput?.start(streamId)
+        state.audioOutput?.start(streamId, deviceId: state.deviceId, gain: state.gain )
         await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.audioOutput
         log("DaxRxCore: audioOutput STARTED, channel = \(state.channel)", .debug, #function, #file, #line)
         
@@ -162,5 +161,5 @@ public struct DaxRxCore {
       // remove stream(s)
       await ApiModel.shared.sendRemoveStreams([streamId])
     }
-  }
+  }  
 }
