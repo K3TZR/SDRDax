@@ -12,7 +12,7 @@ import SwiftUI
 import SharedFeature
 
 struct DaxTxView: View {
-  @Bindable var store: StoreOf<SDRDaxCore>
+  @Bindable var store: StoreOf<DaxTxCore>
   let devices: [AudioDevice]
   
   @State var showDetails = true
@@ -21,26 +21,26 @@ struct DaxTxView: View {
     GroupBox {
       VStack(alignment: .leading) {
         HStack(spacing: 10) {
-          Image(systemName: store.daxTx.showDetails ? "chevron.up.square" : "chevron.down.square").font(.title)
+          Image(systemName: store.ch.showDetails ? "chevron.up.square" : "chevron.down.square").font(.title)
             .onTapGesture {
-              store.daxTx.showDetails.toggle()
+              store.ch.showDetails.toggle()
             }
             .help("Show / Hide Details")
-          Toggle(isOn: $store.daxTx.isOn) { Text("TX").frame(width: 30) }
+          Toggle(isOn: $store.ch.isOn) { Text("TX").frame(width: 30) }
             .toggleStyle(.button)
           
           Spacer()
           Text("Status").frame(width: 90)
-          Text(store.daxTx.status).frame(width: 140)
+          Text(store.status).frame(width: 140)
         }
 //        .frame(width: 320)
 
-        if store.daxTx.showDetails{
+        if store.ch.showDetails{
           Grid(alignment: .topLeading, horizontalSpacing: 10) {
             
             GridRow {
               Text("Input Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.daxTx.audioPlayer.deviceId) {
+              Picker("", selection: $store.ch.deviceId) {
                 Text("None").tag(nil as AudioDeviceID?)
                 ForEach(devices, id: \.id) {
                   if !$0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
@@ -52,9 +52,9 @@ struct DaxTxView: View {
             GridRow {
               HStack {
                 Text("Gain")
-                Text("\(Int(store.daxTx.audioPlayer.gain))").frame(width: 40, alignment: .trailing)
+                Text("\(Int(store.ch.gain))").frame(width: 40, alignment: .trailing)
               }
-              Slider(value: $store.daxTx.audioPlayer.gain, in: 0...100, label: {
+              Slider(value: $store.ch.gain, in: 0...100, label: {
               })
             }
           }

@@ -1,8 +1,8 @@
 //
-//  DaxIqCore.swift
+//  DaxTxCore.swift
 //  SDRDax
 //
-//  Created by Douglas Adams on 2/3/24.
+//  Created by Douglas Adams on 3/1/24.
 //
 
 import ComposableArchitecture
@@ -13,7 +13,7 @@ import DaxAudioFeature
 import SharedFeature
 
 @Reducer
-public struct DaxIqCore {
+public struct DaxTxCore {
   
   public init() {}
   
@@ -22,8 +22,7 @@ public struct DaxIqCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    var ch: IqChannel
-    var frequency: Double?
+    var ch: TxChannel
     var status = "Off"
     
     var audioOutput: DaxAudioPlayer?
@@ -57,31 +56,31 @@ public struct DaxIqCore {
         // MARK: - View Actions
         
       case .onAppear:
-        print("--->>> IQ Channel: onAppear")
+        print("--->>> TX Channel: onAppear")
         // if Active and isOn, start streaming
         if state.isActive && state.ch.isOn {
-          return iqStart(&state)
+          return txStart(&state)
         }
         return .none
         
       case .onDisappear:
-        print("--->>> IQ Channel: onDisappear")
+        print("--->>> TX Channel: onDisappear")
         // if Streaming, stop streaming
         state.isActive = false
         if state.ch.isOn && state.isActive {
-          return iqStop(&state)
+          return txStop(&state)
         }
         return .none
         
       case .isActiveChanged:
-        print("--->>> IQ Channel: isActiveChanged = \(state.isActive)")
+        print("--->>> TX Channel: isActiveChanged = \(state.isActive)")
         // if now Active and isOn, start streaming
         if state.isActive && state.ch.isOn {
-          return iqStart(&state)
+          return txStart(&state)
         }
         // if now not Active and isOn, stop streaming
         if !state.isActive && state.ch.isOn {
-          return iqStop(&state)
+          return txStop(&state)
         }
         return .none
         
@@ -89,13 +88,13 @@ public struct DaxIqCore {
         // MARK: - Binding Actions
         
       case .binding(_):
-        // DeviceId, Gain, or isOn changed
+        // DeviceId or isOn changed
         state.audioOutput?.deviceId = state.ch.deviceId
         if state.ch.isOn && state.isActive {
-          return iqStart(&state)
+          return txStart(&state)
         }
         if !state.ch.isOn && state.isActive {
-          return iqStop(&state)
+          return txStop(&state)
         }
         return .none
       }
@@ -104,9 +103,9 @@ public struct DaxIqCore {
   
   
   // ----------------------------------------------------------------------------
-  // MARK: - IQ effect methods
+  // MARK: - TX effect methods
   
-  private func iqStart(_ state: inout State) -> Effect<DaxIqCore.Action> {
+  private func txStart(_ state: inout State) -> Effect<DaxTxCore.Action> {
     state.audioOutput = DaxAudioPlayer()
     state.status = "Streaming"
     return .run { [state] _ in
@@ -126,7 +125,7 @@ public struct DaxIqCore {
     }
   }
   
-  private func iqStop(_ state: inout State) -> Effect<DaxIqCore.Action> {
+  private func txStop(_ state: inout State) -> Effect<DaxTxCore.Action> {
     state.status = "Off"
     state.audioOutput?.stop()
     state.audioOutput = nil

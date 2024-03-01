@@ -150,12 +150,14 @@ private struct DaxSelectionView: View {
         ScrollView {
           VStack(spacing: 5) {
             if store.daxPanelOptions.contains(.tx) {
-              DaxTxView(store: store, devices: AudioDevice.getDevices())
+              ForEach(store.scope(state: \.txStates, action: \.txStates)) { store in
+                DaxTxView(store: store, devices: AudioDevice.getDevices())
+              }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
             if store.daxPanelOptions.contains(.mic) {
               ForEach(store.scope(state: \.micStates, action: \.micStates)) { store in
-                DaxRxView(store: store, devices: AudioDevice.getDevices())
+                DaxMicView(store: store, devices: AudioDevice.getDevices())
               }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
@@ -192,4 +194,6 @@ private struct DaxSelectionView: View {
   )
   .environment(ApiModel.shared)
   .environment(ListenerModel.shared)
+
+  .frame(minWidth: 370, maxWidth: 370)
 }
