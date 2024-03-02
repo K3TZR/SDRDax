@@ -56,7 +56,6 @@ public struct DaxTxCore {
         // MARK: - View Actions
         
       case .onAppear:
-        print("--->>> TX Channel: onAppear")
         // if Active and isOn, start streaming
         if state.isActive && state.ch.isOn {
           return txStart(&state)
@@ -64,7 +63,6 @@ public struct DaxTxCore {
         return .none
         
       case .onDisappear:
-        print("--->>> TX Channel: onDisappear")
         // if Streaming, stop streaming
         state.isActive = false
         if state.ch.isOn && state.isActive {
@@ -73,7 +71,6 @@ public struct DaxTxCore {
         return .none
         
       case .isActiveChanged:
-        print("--->>> TX Channel: isActiveChanged = \(state.isActive)")
         // if now Active and isOn, start streaming
         if state.isActive && state.ch.isOn {
           return txStart(&state)

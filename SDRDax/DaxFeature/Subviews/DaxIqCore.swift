@@ -57,7 +57,6 @@ public struct DaxIqCore {
         // MARK: - View Actions
         
       case .onAppear:
-        print("--->>> IQ Channel: onAppear")
         // if Active and isOn, start streaming
         if state.isActive && state.ch.isOn {
           return iqStart(&state)
@@ -65,7 +64,6 @@ public struct DaxIqCore {
         return .none
         
       case .onDisappear:
-        print("--->>> IQ Channel: onDisappear")
         // if Streaming, stop streaming
         state.isActive = false
         if state.ch.isOn && state.isActive {
@@ -74,7 +72,6 @@ public struct DaxIqCore {
         return .none
         
       case .isActiveChanged:
-        print("--->>> IQ Channel: isActiveChanged = \(state.isActive)")
         // if now Active and isOn, start streaming
         if state.isActive && state.ch.isOn {
           return iqStart(&state)

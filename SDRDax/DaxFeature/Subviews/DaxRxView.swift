@@ -18,7 +18,6 @@ struct DaxRxView: View {
   @Bindable var store: StoreOf<DaxRxCore>
   let devices: [AudioDevice]
   
-      
   private var buttonLabel: String {
     if store.ch.channel == 0 { return "Mic"}
     return "Rx\(store.ch.channel)"

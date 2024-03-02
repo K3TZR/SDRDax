@@ -58,7 +58,6 @@ public struct DaxRxCore {
         // MARK: - View Actions
         
       case .onAppear:
-        print("--->>> Channel: onAppear")
         // if Active and isOn, start streaming
         state.audioOutput?.gain = state.ch.gain
         if state.isActive && state.ch.isOn {
@@ -67,7 +66,6 @@ public struct DaxRxCore {
         return .none
 
       case .onDisappear:
-        print("--->>> Channel: onDisappear")
         // if Streaming, stop streaming
         state.isActive = false
         if state.ch.isOn && state.isActive {
@@ -76,7 +74,6 @@ public struct DaxRxCore {
         return .none
 
       case .isActiveChanged:
-        print("--->>> Channel: isActiveChanged = \(state.isActive)")
         // if now Active and isOn, start streaming
         state.audioOutput?.gain = state.ch.gain
         if state.isActive && state.ch.isOn {

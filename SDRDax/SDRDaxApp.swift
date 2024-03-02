@@ -53,15 +53,5 @@ struct SDRDaxApp: App {
     }
     .windowStyle(.titleBar)
     .windowResizability(.contentSize)
-
-    
-    // Settings window
-    Settings {
-      SettingsView()
-    }
-    .windowStyle(.hiddenTitleBar)
-    .windowResizability(WindowResizability.contentSize)
-    .defaultPosition(.bottomLeading)
-
   }
 }

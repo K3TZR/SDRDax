@@ -58,7 +58,6 @@ public struct DaxMicCore {
         // MARK: - View Actions
         
       case .onAppear:
-        print("--->>> Channel: onAppear")
         // if Active and isOn, start streaming
         state.audioOutput?.gain = state.ch.gain
         if state.isActive && state.ch.isOn {
@@ -67,7 +66,6 @@ public struct DaxMicCore {
         return .none
 
       case .onDisappear:
-        print("--->>> Channel: onDisappear")
         // if Streaming, stop streaming
         state.isActive = false
         if state.ch.isOn && state.isActive {
@@ -76,7 +74,6 @@ public struct DaxMicCore {
         return .none
 
       case .isActiveChanged:
-        print("--->>> Channel: isActiveChanged = \(state.isActive)")
         // if now Active and isOn, start streaming
         state.audioOutput?.gain = state.ch.gain
         if state.isActive && state.ch.isOn {
@@ -114,10 +111,10 @@ public struct DaxMicCore {
     state.status = "Streaming"
     return .run { [state] _ in
       // request a stream
-      if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.ch.channel).streamId {     // FIXME: Mic Stream
+      if let streamId = try await ApiModel.shared.requestDaxMicAudioStream().streamId {
         // finish audio setup
         state.audioOutput?.start(streamId, deviceId: state.ch.deviceId, gain: state.ch.gain )
-        await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.audioOutput
+        await ApiModel.shared.daxMicAudioStreams[id: streamId]?.delegate = state.audioOutput
         log("DaxMicCore: audioOutput STARTED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
         
       } else {

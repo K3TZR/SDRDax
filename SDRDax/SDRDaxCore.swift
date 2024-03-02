@@ -94,8 +94,7 @@ public struct SDRDaxCore {
     
     var micChannels = [MicChannel(channel: 0, deviceId: nil, gain: 50, isOn: false, showDetails: false)]
 
-    var rxChannels = [RxChannel(channel: 0, deviceId: nil, gain: 50, isOn: false, showDetails: false),
-                      RxChannel(channel: 1, deviceId: nil, gain: 50, isOn: false, showDetails: false),
+    var rxChannels = [RxChannel(channel: 1, deviceId: nil, gain: 50, isOn: false, showDetails: false),
                       RxChannel(channel: 2, deviceId: nil, gain: 50, isOn: false, showDetails: false),
                       RxChannel(channel: 3, deviceId: nil, gain: 50, isOn: false, showDetails: false),
                       RxChannel(channel: 4, deviceId: nil, gain: 50, isOn: false, showDetails: false),
@@ -241,7 +240,7 @@ public struct SDRDaxCore {
         return .none
         
         // ----------------------------------------------------------------------------
-        // MARK: - Presented Views
+        // MARK: - View Presentation
         
       case let .showAlert(alertType, message):
         switch alertType {
@@ -277,74 +276,55 @@ public struct SDRDaxCore {
         // attempt to login to Smartlink
         return smartlinkUserLogin(&state, user, password)
         
-      case .login(.dismiss):
-        return .none
-      
       case .login(_):
         return .none
 
         // ----------------------------------------------------------------------------
         // MARK: - Dax IQ Actions
         
-      case .iqStates(.element(id: _, action: .isActiveChanged)):
-        print("--->>> App: iqStates: isActiveChanged")
-        return .none
+//      case .iqStates(.element(id: _, action: .isActiveChanged)):
+//        print("--->>> App: iqStates: isActiveChanged")
+//        return .none
 
       case let .iqStates(.element(id: channel, action: .binding)):
-        print("--->>> App: iqStates: channel = \(channel), ANY binding")
-        state.iqChannels[channel] = state.iqStates[id: channel]!.ch
+        state.iqChannels[channel - 1] = state.iqStates[id: channel]!.ch
         UserDefaults.saveStructToSettings("daxIqChannels", state.iqChannels, defaults: UserDefaults.standard)
         return .none
 
       case .iqStates(_):
-        print("--->>> App: iqStates: OTHER")
         return .none
 
         // ----------------------------------------------------------------------------
         // MARK: - Dax MIC Actions
         
       case let .micStates(.element(id: channel, action: .binding)):
-        print("--->>> App: micStates: channel = \(channel), ANY binding")
-        state.rxChannels[channel] = state.rxStates[id: channel]!.ch
-        UserDefaults.saveStructToSettings("daxRxChannels", state.rxChannels, defaults: UserDefaults.standard)
+        state.micChannels[channel - 1] = state.micStates[id: channel]!.ch
+        UserDefaults.saveStructToSettings("daxMicChannels", state.micChannels, defaults: UserDefaults.standard)
         return .none
 
-//      case .rxStates(.element(id: _, action: .isActiveChanged)):
-//        print("--->>> App: rxStates: isActiveChanged")
-//        return .none
-
       case .micStates(_):
-        print("--->>> App: micStates: OTHER")
         return .none
         
         // ----------------------------------------------------------------------------
         // MARK: - Dax RX Actions
         
-//      case .rxStates(.element(id: _, action: .isActiveChanged)):
-//        print("--->>> App: rxStates: isActiveChanged")
-//        return .none
-
       case let .rxStates(.element(id: channel, action: .binding)):
-        print("--->>> App: rxStates: channel = \(channel), ANY binding")
-        state.rxChannels[channel] = state.rxStates[id: channel]!.ch
+        state.rxChannels[channel - 1] = state.rxStates[id: channel]!.ch
         UserDefaults.saveStructToSettings("daxRxChannels", state.rxChannels, defaults: UserDefaults.standard)
         return .none
 
       case .rxStates(_):
-        print("--->>> App: rxStates: OTHER")
         return .none
 
         // ----------------------------------------------------------------------------
         // MARK: - Dax TX Actions
         
       case let .txStates(.element(id: channel, action: .binding)):
-        print("--->>> App: txStates: channel = \(channel), ANY binding")
-        state.txChannels[channel] = state.txStates[id: channel]!.ch
+        state.txChannels[channel - 1] = state.txStates[id: channel]!.ch
         UserDefaults.saveStructToSettings("daxTxChannels", state.txChannels, defaults: UserDefaults.standard)
         return .none
 
       case .txStates(_):
-        print("--->>> App: txStates: OTHER")
         return .none
       }
     }
@@ -442,10 +422,8 @@ public struct SDRDaxCore {
       state.smartlinkEnabled = UserDefaults.standard.bool(forKey: "smartlinkEnabled")
       state.smartlinkLoginRequired = UserDefaults.standard.bool(forKey: "smartlinkLoginRequired")
       state.smartlinkUser = UserDefaults.standard.string(forKey: "smartlinkUser") ?? ""
-      
-      // ----------------------------------------------------------------------------
-      // MARK: - Channels
-      
+            
+      // Channels
       // IQ Channels (Radio -> SDRDax), 1...4
       state.iqChannels = UserDefaults.getStructFromSettings("daxIqChannels", defaults: UserDefaults.standard) ?? [
         IqChannel(channel: 1, deviceId: nil, isOn: false, sampleRate: 24_000, showDetails: false),
@@ -453,7 +431,6 @@ public struct SDRDaxCore {
         IqChannel(channel: 3, deviceId: nil, isOn: false, sampleRate: 24_000, showDetails: false),
         IqChannel(channel: 4, deviceId: nil, isOn: false, sampleRate: 24_000, showDetails: false),
       ]
-
       // Mic Channels (Radio -> SDRDax)
       state.micChannels = UserDefaults.getStructFromSettings("daxMicChannels", defaults: UserDefaults.standard) ?? [
         MicChannel(channel: 1, deviceId: nil, gain: 50, isOn: false, showDetails: false),
@@ -470,32 +447,26 @@ public struct SDRDaxCore {
         TxChannel(channel: 1, gain: 50, isOn: false, showDetails: false)
       ]
       
-      // ----------------------------------------------------------------------------
-      // MARK: - States
-      
+      // States
       state.iqStates = [
         DaxIqCore.State(ch: state.iqChannels[0], isActive: state.$isActive),
         DaxIqCore.State(ch: state.iqChannels[1], isActive: state.$isActive),
         DaxIqCore.State(ch: state.iqChannels[2], isActive: state.$isActive),
         DaxIqCore.State(ch: state.iqChannels[3], isActive: state.$isActive),
       ]
-
       state.micStates = [
         DaxMicCore.State(ch: state.micChannels[0], isActive: state.$isActive)
       ]
-      
       state.rxStates = [
         DaxRxCore.State(ch: state.rxChannels[0], isActive: state.$isActive),
         DaxRxCore.State(ch: state.rxChannels[1], isActive: state.$isActive),
         DaxRxCore.State(ch: state.rxChannels[2], isActive: state.$isActive),
         DaxRxCore.State(ch: state.rxChannels[3], isActive: state.$isActive),
       ]
-      
       state.txStates = [
         DaxTxCore.State(ch: state.txChannels[0], isActive: state.$isActive)
       ]
-      
-      
+            
       // instantiate the Logger, use the group defaults (not the Standard)
       _ = XCGWrapper(logLevel: .debug, group: "group.net.k3tzr.flexapps")
       
@@ -511,7 +482,6 @@ public struct SDRDaxCore {
     return .none
   }
 
-  
   // ----------------------------------------------------------------------------
   // MARK: - Local Listener effect methods
 
@@ -572,7 +542,6 @@ extension UserDefaults {
   ///    - key:         the name of the user default
   /// - Returns:        a struct (or nil)
   public class func getStructFromSettings<T: Decodable>(_ key: String, defaults: UserDefaults) -> T? {
-    
     if let data = defaults.object(forKey: key) as? Data {
       let decoder = JSONDecoder()
       if let value = try? decoder.decode(T.self, from: data) {
@@ -589,7 +558,6 @@ extension UserDefaults {
   ///    - key:        the name of the user default
   ///    - value:      a struct  to be encoded (or nil)
   public class func saveStructToSettings<T: Encodable>(_ key: String, _ value: T?, defaults: UserDefaults) {
-    
     if value == nil {
       defaults.removeObject(forKey: key)
     } else {
@@ -604,13 +572,13 @@ extension UserDefaults {
 
 }
 
-extension URL {
-  static var rxs: URL {
-    return try! FileManager.default.url(
-      for: .applicationSupportDirectory,
-      in: .userDomainMask,
-      appropriateFor: nil,
-      create: false
-    ).appendingPathComponent("RxDevice.json")
-  }
-}
+//extension URL {
+//  static var rxs: URL {
+//    return try! FileManager.default.url(
+//      for: .applicationSupportDirectory,
+//      in: .userDomainMask,
+//      appropriateFor: nil,
+//      create: false
+//    ).appendingPathComponent("RxDevice.json")
+//  }
+//}
