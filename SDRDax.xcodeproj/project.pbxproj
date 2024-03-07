@@ -28,7 +28,6 @@
 		9FD26D6B2B69911100397CBE /* VitaFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D6A2B69911100397CBE /* VitaFeature */; };
 		9FD26D6D2B69911100397CBE /* XCGLogFeature in Frameworks */ = {isa = PBXBuildFile; productRef = 9FD26D6C2B69911100397CBE /* XCGLogFeature */; };
 		9FD26D6F2B69919700397CBE /* SDRDaxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D6E2B69919700397CBE /* SDRDaxView.swift */; };
-		9FD26D7A2B6998B000397CBE /* DaxModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D732B6998B000397CBE /* DaxModel.swift */; };
 		9FD26D7B2B6998B000397CBE /* DaxIqView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D752B6998B000397CBE /* DaxIqView.swift */; };
 		9FD26D7C2B6998B000397CBE /* DaxTxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D762B6998B000397CBE /* DaxTxView.swift */; };
 		9FD26D7D2B6998B000397CBE /* DaxRxView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9FD26D772B6998B000397CBE /* DaxRxView.swift */; };
@@ -51,7 +50,6 @@
 		9FD26D4F2B698FF900397CBE /* SDRDax.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SDRDax.entitlements; sourceTree = "<group>"; };
 		9FD26D552B69906D00397CBE /* SDRDaxCore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDRDaxCore.swift; sourceTree = "<group>"; };
 		9FD26D6E2B69919700397CBE /* SDRDaxView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SDRDaxView.swift; sourceTree = "<group>"; };
-		9FD26D732B6998B000397CBE /* DaxModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxModel.swift; sourceTree = "<group>"; };
 		9FD26D752B6998B000397CBE /* DaxIqView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxIqView.swift; sourceTree = "<group>"; };
 		9FD26D762B6998B000397CBE /* DaxTxView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxTxView.swift; sourceTree = "<group>"; };
 		9FD26D772B6998B000397CBE /* DaxRxView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DaxRxView.swift; sourceTree = "<group>"; };
@@ -133,7 +131,6 @@
 		9FD26D722B6998B000397CBE /* DaxFeature */ = {
 			isa = PBXGroup;
 			children = (
-				9FD26D732B6998B000397CBE /* DaxModel.swift */,
 				9FD26D742B6998B000397CBE /* Subviews */,
 			);
 			path = DaxFeature;
@@ -257,7 +254,6 @@
 				9FD26D562B69906D00397CBE /* SDRDaxCore.swift in Sources */,
 				9FD26D7B2B6998B000397CBE /* DaxIqView.swift in Sources */,
 				9FD26D7D2B6998B000397CBE /* DaxRxView.swift in Sources */,
-				9FD26D7A2B6998B000397CBE /* DaxModel.swift in Sources */,
 				9FD26D472B698FF800397CBE /* SDRDaxApp.swift in Sources */,
 				9FB55E802B923798004AD20E /* DaxMicCore.swift in Sources */,
 				9FD26D8A2B6E95CD00397CBE /* DaxRxCore.swift in Sources */,

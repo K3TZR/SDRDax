@@ -23,11 +23,16 @@ public struct DaxRxCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    var ch: RxChannel
+    let channel: Int
+    var deviceId: AudioDeviceID?
+    var gain: Double
+    var isOn: Bool
+    var showDetails: Bool
+    
     var sliceLetter: String?
     var status: String = "Off"
 
-    public var id: Int { ch.channel }
+    public var id: Int { channel }
 
     var audioOutput: DaxAudioPlayer?
     
@@ -58,64 +63,88 @@ public struct DaxRxCore {
         // MARK: - View Actions
         
       case .onAppear:
+        print("DaxRxCore: onAppear isActive = \(state.isActive), status = \(state.status), isOn = \(state.isOn)")
         // if Active and isOn, start streaming
-        state.audioOutput?.gain = state.ch.gain
-        if state.isActive && state.ch.isOn {
+        if state.isActive && state.isOn {
           return daxStart(&state)
         }
         return .none
 
       case .onDisappear:
+        print("DaxRxCore: onDisappear isActive = \(state.isActive), status = \(state.status), isOn = \(state.isOn)")
         // if Streaming, stop streaming
-        state.isActive = false
-        if state.ch.isOn && state.isActive {
+        if state.isOn && state.isActive {
           return daxStop(&state)
         }
         return .none
 
       case .isActiveChanged:
-        // if now Active and isOn, start streaming
-        state.audioOutput?.gain = state.ch.gain
-        if state.isActive && state.ch.isOn {
-          return daxStart(&state)
-        }
-        // if now not Active and isOn, stop streaming
-        if !state.isActive && state.ch.isOn {
-          return daxStop(&state)
-        }
-        return .none
-        
+        print("DaxRxCore: isActiveChanged isActive = \(state.isActive), status = \(state.status), isOn = \(state.isOn)")
+        return startStop(&state)
+                
         // ----------------------------------------------------------------------------
         // MARK: - Binding Actions
         
-      case .binding(_):
-        // DeviceId, Gain, or isOn changed
-        state.audioOutput?.gain = state.ch.gain
-        state.audioOutput?.deviceId = state.ch.deviceId
-        if state.ch.isOn && state.isActive {
-            return daxStart(&state)
-        }
-        if !state.ch.isOn && state.isActive {
-            return daxStop(&state)
-        }
+      case .binding(\.isOn):
+        print("DaxRxCore: binding isOn = \(state.isOn)")
+        return startStop(&state)
+        
+      case .binding(\.gain):
+        print("DaxRxCore: binding gain = \(state.gain)")
+        state.audioOutput?.gain = state.gain
         return .none
-     }
+        
+      case .binding(\.deviceId):
+        print("DaxRxCore: binding deviceId = \(state.deviceId ?? 0)")
+        state.audioOutput?.deviceId = state.deviceId
+        if state.deviceId == nil {
+          return daxStop(&state)
+        } else {
+          return startStop(&state)
+        }
+        
+      case .binding(\.showDetails):
+        print("DaxRxCore: binding showDetails = \(state.showDetails)")
+        return .none
+        
+      case .binding(_):
+        print("DaxRxCore: binding OTHER")
+        return .none
+      }
     }
   }
   
   // ----------------------------------------------------------------------------
   // MARK: - DAX effect methods
   
+  private func startStop(_ state: inout State)  -> Effect<DaxRxCore.Action> {
+    print("DaxRxCore: startStop isActive = \(state.isActive), status = \(state.status), isOn = \(state.isOn)")
+    // if now Active and isOn, start streaming
+    if state.isActive && state.status == "Off" && state.isOn {
+      return daxStart(&state)
+    }
+    if state.isActive && state.status == "Streaming" && !state.isOn {
+      return daxStop(&state)
+    }
+
+    // if now not Active and isOn, stop streaming
+    if !state.isActive && state.isOn {
+      return daxStop(&state)
+    }
+    return .none
+  }
+  
   private func daxStart(_ state: inout State) -> Effect<DaxRxCore.Action> {
+    print("DaxRxCore: daxStart")
     state.audioOutput = DaxAudioPlayer()
     state.status = "Streaming"
     return .run { [state] _ in
       // request a stream
-      if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.ch.channel).streamId {     // FIXME: Mic Stream
+      if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.channel).streamId {     // FIXME: Mic Stream
         // finish audio setup
-        state.audioOutput?.start(streamId, deviceId: state.ch.deviceId, gain: state.ch.gain )
+        state.audioOutput!.start(streamId, deviceId: state.deviceId, gain: state.gain )
         await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.audioOutput
-        log("DaxRxCore: audioOutput STARTED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
+        log("DaxRxCore: audioOutput STARTED, channel = \(state.channel)", .debug, #function, #file, #line)
         
       } else {
         // FAILURE, tell the user it failed
@@ -127,10 +156,11 @@ public struct DaxRxCore {
   }
     
   private func daxStop(_ state: inout State) -> Effect<DaxRxCore.Action> {
+    print("DaxRxCore: daxStop")
     state.status = "Off"
     state.audioOutput?.stop()
     state.audioOutput = nil
-    log("DaxRxCore: audioOutput STOPPED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
+    log("DaxRxCore: audioOutput STOPPED, channel = \(state.channel)", .debug, #function, #file, #line)
     return .run { [streamId = state.audioOutput?.streamId] _ in
       // remove stream(s)
       await ApiModel.shared.sendRemoveStreams([streamId])
