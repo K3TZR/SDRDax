@@ -87,7 +87,7 @@ public struct DaxIqCore {
         
       case .binding(_):
         // DeviceId, Gain, or isOn changed
-        state.audioOutput?.deviceId = state.ch.deviceId
+        state.audioOutput?.deviceId = state.ch.deviceId!
         if state.ch.isOn && state.isActive {
           return iqStart(&state)
         }
@@ -104,33 +104,35 @@ public struct DaxIqCore {
   // MARK: - IQ effect methods
   
   private func iqStart(_ state: inout State) -> Effect<DaxIqCore.Action> {
-    state.audioOutput = DaxAudioPlayer()
-    state.status = "Streaming"
-    return .run { [state] _ in
-      // request a stream
-      if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.ch.channel).streamId {     // FIXME: Mic Stream
-        // finish audio setup
-        state.audioOutput?.start(streamId, deviceId: state.ch.deviceId, gain: 100 )
-        await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.audioOutput
-        log("DaxRxCore: audioOutput STARTED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
-        
-      } else {
-        // FAILURE, tell the user it failed
-        //      alertText = "Failed to start a RemoteRxAudioStream"
-        //      showAlert = true
-        fatalError("DaxRxCore: Failed to start a RemoteRxAudioStream")
-      }
-    }
+//    state.audioOutput = DaxAudioPlayer()
+//    state.status = "Streaming"
+//    return .run { [state] _ in
+//      // request a stream
+//      if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.ch.channel).streamId {     // FIXME: Mic Stream
+//        // finish audio setup
+//        state.audioOutput?.start(streamId, deviceId: state.ch.deviceId, gain: 100 )
+//        await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.audioOutput
+//        log("DaxRxCore: audioOutput STARTED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
+//        
+//      } else {
+//        // FAILURE, tell the user it failed
+//        //      alertText = "Failed to start a RemoteRxAudioStream"
+//        //      showAlert = true
+//        fatalError("DaxRxCore: Failed to start a RemoteRxAudioStream")
+//      }
+//    }
+    return .none
   }
   
   private func iqStop(_ state: inout State) -> Effect<DaxIqCore.Action> {
-    state.status = "Off"
-    state.audioOutput?.stop()
-    state.audioOutput = nil
-    log("DaxRxCore: audioOutput STOPPED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
-    return .run { [streamId = state.audioOutput?.streamId] _ in
-      // remove stream(s)
-      await ApiModel.shared.sendRemoveStreams([streamId])
-    }
+//    state.status = "Off"
+//    state.audioOutput?.stop()
+//    state.audioOutput = nil
+//    log("DaxRxCore: audioOutput STOPPED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
+//    return .run { [streamId = state.audioOutput?.streamId] _ in
+//      // remove stream(s)
+//      await ApiModel.shared.sendRemoveStreams([streamId])
+//    }
+    return .none
   }
 }

@@ -17,7 +17,7 @@ import SharedFeature
 public struct DaxRxCore {
   
   public init() {}
-
+  
   // ----------------------------------------------------------------------------
   // MARK: - State
   
@@ -48,6 +48,8 @@ public struct DaxRxCore {
     case isActiveChanged
     case onAppear
     case onDisappear
+    
+    case replyReceived(String?)
   }
   
   // ----------------------------------------------------------------------------
@@ -79,36 +81,33 @@ public struct DaxRxCore {
         return .none
 
       case .isActiveChanged:
-        print("DaxRxCore: isActiveChanged isActive = \(state.isActive), status = \(state.status), isOn = \(state.isOn)")
         return startStop(&state)
                 
+      case let .replyReceived(reply):
+        return .none
+        
         // ----------------------------------------------------------------------------
         // MARK: - Binding Actions
         
       case .binding(\.isOn):
-        print("DaxRxCore: binding isOn = \(state.isOn)")
         return startStop(&state)
         
       case .binding(\.gain):
-        print("DaxRxCore: binding gain = \(state.gain)")
         state.audioOutput?.gain = state.gain
         return .none
         
       case .binding(\.deviceId):
-        print("DaxRxCore: binding deviceId = \(state.deviceId ?? 0)")
-        state.audioOutput?.deviceId = state.deviceId
         if state.deviceId == nil {
           return daxStop(&state)
         } else {
+          state.audioOutput?.deviceId = state.deviceId!
           return startStop(&state)
         }
         
       case .binding(\.showDetails):
-        print("DaxRxCore: binding showDetails = \(state.showDetails)")
         return .none
         
       case .binding(_):
-        print("DaxRxCore: binding OTHER")
         return .none
       }
     }
@@ -117,8 +116,7 @@ public struct DaxRxCore {
   // ----------------------------------------------------------------------------
   // MARK: - DAX effect methods
   
-  private func startStop(_ state: inout State)  -> Effect<DaxRxCore.Action> {
-    print("DaxRxCore: startStop isActive = \(state.isActive), status = \(state.status), isOn = \(state.isOn)")
+  private func startStop(_ state: inout State) -> Effect<DaxRxCore.Action> {
     // if now Active and isOn, start streaming
     if state.isActive && state.status == "Off" && state.isOn {
       return daxStart(&state)
@@ -135,28 +133,15 @@ public struct DaxRxCore {
   }
   
   private func daxStart(_ state: inout State) -> Effect<DaxRxCore.Action> {
-    print("DaxRxCore: daxStart")
-    state.audioOutput = DaxAudioPlayer()
+    state.audioOutput = DaxAudioPlayer(deviceId: state.deviceId!, gain: state.gain, sampleRate: 24_000)
     state.status = "Streaming"
-    return .run { [state] _ in
-      // request a stream
-      if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.channel).streamId {     // FIXME: Mic Stream
-        // finish audio setup
-        state.audioOutput!.start(streamId, deviceId: state.deviceId, gain: state.gain )
-        await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.audioOutput
-        log("DaxRxCore: audioOutput STARTED, channel = \(state.channel)", .debug, #function, #file, #line)
-        
-      } else {
-        // FAILURE, tell the user it failed
-        //      alertText = "Failed to start a RemoteRxAudioStream"
-        //      showAlert = true
-        fatalError("DaxRxCore: Failed to start a RemoteRxAudioStream")
-      }
+    return .run { [state] send in
+      // request a stream & wait for the reply
+      await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.channel, replyTo: state.audioOutput!.streamReplyHandler)
     }
   }
-    
+
   private func daxStop(_ state: inout State) -> Effect<DaxRxCore.Action> {
-    print("DaxRxCore: daxStop")
     state.status = "Off"
     state.audioOutput?.stop()
     state.audioOutput = nil
@@ -165,5 +150,5 @@ public struct DaxRxCore {
       // remove stream(s)
       await ApiModel.shared.sendRemoveStreams([streamId])
     }
-  }  
+  }
 }

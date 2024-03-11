@@ -108,7 +108,7 @@ struct SDRDaxView: View {
             }
             Toggle(isOn: $store.autoStart) {
               Text(store.autoStart ? "Auto" : "Manual").frame(width: 60)
-            }
+            }.disabled(true)
           }
           .toggleStyle(.button)
           .controlSize(.small)
@@ -135,10 +135,10 @@ private struct DaxSelectionView: View {
       HStack {
         // segmented contol to select DAX type(s)
         ControlGroup {
-          Toggle("Tx", isOn: Binding(get: { store.daxPanelOptions.contains(.tx) }, set: {_,_  in toggleOption(.tx) } ))
+          Toggle("Tx", isOn: Binding(get: { store.daxPanelOptions.contains(.tx) }, set: {_,_  in toggleOption(.tx) } )).disabled(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
           Toggle("Mic", isOn: Binding(get: { store.daxPanelOptions.contains(.mic)  }, set: {_,_  in toggleOption(.mic) } ))
           Toggle("Rx", isOn: Binding(get: { store.daxPanelOptions.contains(.rx)  }, set: {_,_  in toggleOption(.rx) } ))
-          Toggle("IQ", isOn: Binding(get: { store.daxPanelOptions.contains(.iq)  }, set: {_,_  in toggleOption(.iq) } ))
+          Toggle("IQ", isOn: Binding(get: { store.daxPanelOptions.contains(.iq)  }, set: {_,_  in toggleOption(.iq) } )).disabled(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
         }
       }
       
