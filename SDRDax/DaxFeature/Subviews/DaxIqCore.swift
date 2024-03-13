@@ -5,6 +5,7 @@
 //  Created by Douglas Adams on 2/3/24.
 //
 
+import AVFoundation
 import ComposableArchitecture
 import Foundation
 
@@ -25,12 +26,12 @@ public struct DaxIqCore {
     var ch: IqChannel
     var frequency: Double?
     var status = "Off"
-    
+    @Shared var isConnected: Bool
+
     var audioOutput: DaxAudioPlayer?
+    let devices = AudioDevice.getDevices()
     
     public var id: Int { ch.channel }
-    
-    @Shared var isActive: Bool
   }
   
   // ----------------------------------------------------------------------------
@@ -58,26 +59,26 @@ public struct DaxIqCore {
         
       case .onAppear:
         // if Active and isOn, start streaming
-        if state.isActive && state.ch.isOn {
+        if state.isConnected && state.ch.isOn {
           return iqStart(&state)
         }
         return .none
         
       case .onDisappear:
         // if Streaming, stop streaming
-        state.isActive = false
-        if state.ch.isOn && state.isActive {
+        state.isConnected = false
+        if state.ch.isOn && state.isConnected {
           return iqStop(&state)
         }
         return .none
         
       case .isActiveChanged:
         // if now Active and isOn, start streaming
-        if state.isActive && state.ch.isOn {
+        if state.isConnected && state.ch.isOn {
           return iqStart(&state)
         }
         // if now not Active and isOn, stop streaming
-        if !state.isActive && state.ch.isOn {
+        if !state.isConnected && state.ch.isOn {
           return iqStop(&state)
         }
         return .none
@@ -87,11 +88,11 @@ public struct DaxIqCore {
         
       case .binding(_):
         // DeviceId, Gain, or isOn changed
-        state.audioOutput?.deviceId = state.ch.deviceId!
-        if state.ch.isOn && state.isActive {
+        state.audioOutput?.deviceId = getDeviceId(state)
+        if state.ch.isOn && state.isConnected {
           return iqStart(&state)
         }
-        if !state.ch.isOn && state.isActive {
+        if !state.ch.isOn && state.isConnected {
           return iqStop(&state)
         }
         return .none
@@ -104,35 +105,42 @@ public struct DaxIqCore {
   // MARK: - IQ effect methods
   
   private func iqStart(_ state: inout State) -> Effect<DaxIqCore.Action> {
-//    state.audioOutput = DaxAudioPlayer()
-//    state.status = "Streaming"
-//    return .run { [state] _ in
-//      // request a stream
-//      if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.ch.channel).streamId {     // FIXME: Mic Stream
-//        // finish audio setup
-//        state.audioOutput?.start(streamId, deviceId: state.ch.deviceId, gain: 100 )
-//        await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.audioOutput
-//        log("DaxRxCore: audioOutput STARTED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
-//        
-//      } else {
-//        // FAILURE, tell the user it failed
-//        //      alertText = "Failed to start a RemoteRxAudioStream"
-//        //      showAlert = true
-//        fatalError("DaxRxCore: Failed to start a RemoteRxAudioStream")
-//      }
-//    }
+    //    state.audioOutput = DaxAudioPlayer()
+    //    state.status = "Streaming"
+    //    return .run { [state] _ in
+    //      // request a stream
+    //      if let streamId = try await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.ch.channel).streamId {     // FIXME: Mic Stream
+    //        // finish audio setup
+    //        state.audioOutput?.start(streamId, deviceId: state.ch.deviceId, gain: 100 )
+    //        await ApiModel.shared.daxRxAudioStreams[id: streamId]?.delegate = state.audioOutput
+    //        log("DaxRxCore: audioOutput STARTED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
+    //
+    //      } else {
+    //        // FAILURE, tell the user it failed
+    //        //      alertText = "Failed to start a RemoteRxAudioStream"
+    //        //      showAlert = true
+    //        fatalError("DaxRxCore: Failed to start a RemoteRxAudioStream")
+    //      }
+    //    }
     return .none
   }
   
   private func iqStop(_ state: inout State) -> Effect<DaxIqCore.Action> {
-//    state.status = "Off"
-//    state.audioOutput?.stop()
-//    state.audioOutput = nil
-//    log("DaxRxCore: audioOutput STOPPED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
-//    return .run { [streamId = state.audioOutput?.streamId] _ in
-//      // remove stream(s)
-//      await ApiModel.shared.sendRemoveStreams([streamId])
-//    }
+    //    state.status = "Off"
+    //    state.audioOutput?.stop()
+    //    state.audioOutput = nil
+    //    log("DaxRxCore: audioOutput STOPPED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
+    //    return .run { [streamId = state.audioOutput?.streamId] _ in
+    //      // remove stream(s)
+    //      await ApiModel.shared.sendRemoveStreams([streamId])
+    //    }
     return .none
+  }
+  
+  private func getDeviceId(_ state: State) -> AudioDeviceID {
+    for device in state.devices where device.uid == state.ch.deviceUid {
+      return device.id
+    }
+    fatalError("DaxIqCore: Device Id NOT FOUND")
   }
 }

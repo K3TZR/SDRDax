@@ -14,7 +14,6 @@ import SharedFeature
 
 struct DaxIqView: View {
   @Bindable var store: StoreOf<DaxIqCore>
-  let devices: [AudioDevice]
   
   private let rates = [24_000, 48_000, 96_000, 192_000]
   
@@ -30,7 +29,7 @@ struct DaxIqView: View {
             .help("Show / Hide Details")
           Toggle(isOn: $store.ch.isOn) { Text("Iq\(store.ch.channel)").frame(width: 30) }
             .toggleStyle(.button)
-            .disabled(store.ch.deviceId == nil)
+            .disabled(store.ch.deviceUid == nil)
           
           Spacer()
           Text("\(store.frequency == nil ? "No Pan" : String(format: "%2.6f", store.frequency!))")
@@ -53,10 +52,10 @@ struct DaxIqView: View {
             
             GridRow {
               Text("Output Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.ch.deviceId) {
-                Text("none").tag(nil as AudioDeviceID?)
-                ForEach(devices, id: \.id) {
-                  if $0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
+              Picker("", selection: $store.ch.deviceUid) {
+                Text("none").tag(nil as String?)
+                ForEach(store.devices, id: \.uid) {
+                  if $0.hasOutput { Text($0.name!).tag($0.uid as String?) }
                 }
               }
               .labelsHidden()
@@ -66,7 +65,7 @@ struct DaxIqView: View {
       }
       
       // monitor isActive
-      .onChange(of: store.isActive) {
+      .onChange(of: store.isConnected) {
         store.send(.isActiveChanged)
       }
             
@@ -85,9 +84,9 @@ struct DaxIqView: View {
 
 #Preview {
   DaxIqView(
-    store: Store(initialState: DaxIqCore.State(ch: IqChannel(channel: 1, deviceId: nil, isOn: false, sampleRate: 24_000, showDetails: true), isActive: Shared(false))) {
+    store: Store(initialState: DaxIqCore.State(ch: IqChannel(channel: 1, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: true), isConnected: Shared(false))) {
       DaxIqCore()
-    }, devices: AudioDevice.getDevices()
+    }
   )
 
   .frame(minWidth: 370, maxWidth: 370)

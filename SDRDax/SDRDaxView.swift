@@ -61,7 +61,7 @@ struct SDRDaxView: View {
           }
           .labelsHidden()
           
-          Image(systemName: "circle.fill").foregroundColor(store.isActive ? .green : .red)
+          Image(systemName: "circle.fill").foregroundColor(store.isConnected ? .green : .red)
           Spacer()
           Image(systemName: "plus.circle").disabled(store.selection == nil)
             .help("SAVE DEFAULT")
@@ -142,7 +142,7 @@ private struct DaxSelectionView: View {
         }
       }
       
-      if store.autoStart && !store.isActive {
+      if store.autoStart && !store.isConnected {
         SpinnerView()
       } else {
         
@@ -151,20 +151,20 @@ private struct DaxSelectionView: View {
           VStack(spacing: 5) {
             if store.daxPanelOptions.contains(.tx) {
               ForEach(store.scope(state: \.txStates, action: \.txStates)) { store in
-                DaxTxView(store: store, devices: AudioDevice.getDevices())
+                DaxTxView(store: store)
               }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
             if store.daxPanelOptions.contains(.mic) {
               ForEach(store.scope(state: \.micStates, action: \.micStates)) { store in
-                DaxMicView(store: store, devices: AudioDevice.getDevices())
+                DaxMicView(store: store)
               }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
             if store.daxPanelOptions.contains(.rx) {
               ForEach(store.scope(state: \.rxStates, action: \.rxStates)) { store in
                 VStack(spacing: 5) {
-                  DaxRxView(store: store, devices: AudioDevice.getDevices())
+                  DaxRxView(store: store)
                   Divider().background(Color(.blue))
                 }
               }
@@ -173,7 +173,7 @@ private struct DaxSelectionView: View {
             if store.daxPanelOptions.contains(.iq) {
               ForEach(store.scope(state: \.iqStates, action: \.iqStates)) { store in
                 VStack(spacing: 5) {
-                  DaxIqView(store: store, devices: AudioDevice.getDevices())
+                  DaxIqView(store: store)
                   Divider().background(Color(.blue))
                 }
               }

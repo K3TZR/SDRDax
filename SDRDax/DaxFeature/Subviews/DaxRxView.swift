@@ -16,19 +16,29 @@ import SharedFeature
 
 struct DaxRxView: View {
   @Bindable var store: StoreOf<DaxRxCore>
-  let devices: [AudioDevice]
   
+  @Environment(ApiModel.self) var apiModel
+
 //  private var buttonLabel: String {
 //    if store.ch.channel == 0 { return "Mic"}
 //    return "Rx\(store.ch.channel)"
 //  }
   
-//  private var sliceLetter: String {
-//    for slice in ApiModel.shared.slices where slice.daxChannel == store.channel {
-//      return slice.sliceLetter
-//    }
-//    return "NO Slice"
-//  }
+  @MainActor private var activeSlice: String? {
+    var letter: String?
+    for slice in apiModel.slices where slice.daxChannel == store.channel {
+      letter = slice.sliceLetter
+    }
+    return letter
+  }
+    
+  @MainActor private var status: String {
+    if store.isOn {
+      return activeSlice == nil ? "Waiting" : store.status.rawValue
+    } else {
+      return "Off"
+    }
+  }
   
   var body: some View {
     
@@ -43,12 +53,13 @@ struct DaxRxView: View {
 
           Toggle(isOn: $store.isOn) { Text("Rx\(store.channel)").frame(width:30) }
             .toggleStyle(.button)
-            .disabled(store.deviceId == nil /* || store.sliceLetter == nil */)
+            .disabled(store.deviceUid == nil /* || store.sliceLetter == nil */)
 
           Spacer()
-          Text("????")
+          Text(activeSlice == nil ? "No Slice" : "Slice " + activeSlice!)
+            .foregroundColor(activeSlice == nil ? .red : .green)
             .frame(width: 90)
-          Text(store.status).frame(width: 140)
+          Text(status).frame(width: 140)
         }
         
         if store.showDetails {
@@ -56,10 +67,10 @@ struct DaxRxView: View {
             
             GridRow {
               Text("Output Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.deviceId) {
-                Text("none").tag(nil as AudioDeviceID?)
-                ForEach(devices, id: \.id) {
-                  if $0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
+              Picker("", selection: $store.deviceUid) {
+                Text("none").tag(nil as String?)
+                ForEach(store.devices, id: \.uid) {
+                  if $0.hasOutput { Text($0.name!).tag($0.uid as String?) }
                 }
               }
               .labelsHidden()
@@ -74,34 +85,23 @@ struct DaxRxView: View {
               })
             }
           }
-          if store.audioOutput != nil {
-            LevelIndicatorView(levels: store.audioOutput!.levels, type: .dax)
-          } else {
-            LevelIndicatorView(levels: SignalLevel(rms: -40, peak: -40), type: .dax)
-          }
+//          if store.audioOutput != nil {
+            LevelIndicatorView(levels: store.audioOutput?.levels ?? SignalLevel(rms: -40, peak: -40), type: .dax)
+//          } else {
+//            LevelIndicatorView(levels: SignalLevel(rms: -40, peak: -40), type: .dax)
+//          }
         }
       }
-      
+            
       .onAppear {
         store.send(.onAppear)
       }
-
-      .onChange(of: store.isActive) {
-        store.send(.isActiveChanged)
+      .onChange(of: activeSlice) {
+        store.send(.activeSliceChanged($1))
       }
-//            
-//      .onChange(of: store.ch.isOn) {
-//        store.send(.isOnChanged)
-//      }
-//            
-//      .onChange(of: store.ch.gain) {
-//        store.send(.gainChanged)
-//      }
-//            
-//      .onChange(of: store.ch.deviceId) {
-//        store.send(.deviceIdChanged)
-//      }
-//            
+      .onChange(of: store.isConnected) {
+        store.send(.isConnectedChanged)
+      }
       .onDisappear {
         store.send(.onDisappear)
       }
@@ -112,9 +112,9 @@ struct DaxRxView: View {
 
 #Preview {
   DaxRxView(
-    store: Store(initialState: DaxRxCore.State(channel: 1, deviceId: nil, gain: 50, isOn: false, showDetails: true, isActive: Shared(false))) {
+    store: Store(initialState: DaxRxCore.State(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: true, isConnected: Shared(false))) {
       DaxRxCore()
-    }, devices: AudioDevice.getDevices()
+    }
   )
 
   .frame(minWidth: 370, maxWidth: 370)

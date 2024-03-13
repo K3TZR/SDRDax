@@ -13,7 +13,6 @@ import SharedFeature
 
 struct DaxTxView: View {
   @Bindable var store: StoreOf<DaxTxCore>
-  let devices: [AudioDevice]
   
   @State var showDetails = true
   var body: some View {
@@ -40,10 +39,10 @@ struct DaxTxView: View {
             
             GridRow {
               Text("Input Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.ch.deviceId) {
-                Text("None").tag(nil as AudioDeviceID?)
-                ForEach(devices, id: \.id) {
-                  if !$0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
+              Picker("", selection: $store.ch.deviceUid) {
+                Text("None").tag(nil as String?)
+                ForEach(store.devices, id: \.uid) {
+                  if !$0.hasOutput { Text($0.name!).tag($0.uid as String?) }
                 }
               }
               .labelsHidden()

@@ -16,15 +16,7 @@ import SharedFeature
 
 struct DaxMicView: View {
   @Bindable var store: StoreOf<DaxMicCore>
-  let devices: [AudioDevice]
         
-//  private var sliceLetter: String {
-//    for slice in ApiModel.shared.slices where slice.daxChannel == store.channel {
-//      return slice.sliceLetter
-//    }
-//    return "NO Slice"
-//  }
-  
   var body: some View {
     
     GroupBox {
@@ -38,12 +30,10 @@ struct DaxMicView: View {
 
           Toggle(isOn: $store.isOn) { Text("Mic").frame(width:30) }
             .toggleStyle(.button)
-            .disabled(store.deviceId == nil /* || store.sliceLetter == nil */)
+            .disabled(store.deviceUid == nil /* || store.sliceLetter == nil */)
 
           Spacer()
-          Text("????")
-            .frame(width: 90)
-          Text(store.status).frame(width: 140)
+          Text(store.status.rawValue).frame(width: 140)
         }
         
         if store.showDetails {
@@ -51,10 +41,10 @@ struct DaxMicView: View {
             
             GridRow {
               Text("Output Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.deviceId) {
-                Text("none").tag(nil as AudioDeviceID?)
-                ForEach(devices, id: \.id) {
-                  if $0.hasOutput { Text($0.name!).tag($0.id as AudioDeviceID?) }
+              Picker("", selection: $store.deviceUid) {
+                Text("none").tag(nil as String?)
+                ForEach(store.devices, id: \.uid) {
+                  if $0.hasOutput { Text($0.name!).tag($0.uid as String?) }
                 }
               }
               .labelsHidden()
@@ -81,8 +71,8 @@ struct DaxMicView: View {
         store.send(.onAppear)
       }
 
-      .onChange(of: store.isActive) {
-        store.send(.isActiveChanged)
+      .onChange(of: store.isConnected) {
+        store.send(.isConnectedChanged)
       }
             
 //      .onChange(of: store.ch.isOn) {
@@ -106,9 +96,9 @@ struct DaxMicView: View {
 
 
 #Preview {
-  DaxMicView(store: Store(initialState: DaxMicCore.State(channel: 1, deviceId: nil, gain: 50, isOn: false, showDetails: true, isActive: Shared(false))) {
+  DaxMicView(store: Store(initialState: DaxMicCore.State(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: true, isConnected: Shared(false))) {
       DaxMicCore()
-    }, devices: AudioDevice.getDevices()
+    }
   )
 
   .frame(minWidth: 370, maxWidth: 370)

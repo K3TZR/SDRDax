@@ -12,6 +12,12 @@ import FlexApiFeature
 import ListenerFeature
 import SharedFeature
 
+enum DaxStatus: String {
+  case noSlice = "No Slice"
+  case off = "Off"
+  case streaming = "Streaming"
+}
+
 final class AppDelegate: NSObject, NSApplicationDelegate {
 
   func applicationDidFinishLaunching(_ notification: Notification) {
