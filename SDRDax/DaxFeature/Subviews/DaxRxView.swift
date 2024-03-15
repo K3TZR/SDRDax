@@ -26,14 +26,14 @@ struct DaxRxView: View {
   
   @MainActor private var activeSlice: String? {
     var letter: String?
-    for slice in apiModel.slices where slice.daxChannel == store.channel {
+    for slice in apiModel.slices where slice.daxChannel == store.ch.channel {
       letter = slice.sliceLetter
     }
     return letter
   }
     
   @MainActor private var status: String {
-    if store.isOn {
+    if store.ch.isOn {
       return activeSlice == nil ? "Waiting" : store.status.rawValue
     } else {
       return "Off"
@@ -45,15 +45,15 @@ struct DaxRxView: View {
     GroupBox {
       VStack(alignment: .leading) {
         HStack(spacing: 10) {
-          Image(systemName: store.showDetails ? "chevron.up.square" : "chevron.down.square").font(.title)
+          Image(systemName: store.ch.showDetails ? "chevron.up.square" : "chevron.down.square").font(.title)
             .onTapGesture {
-              store.showDetails.toggle()
+              store.ch.showDetails.toggle()
             }
             .help("Show / Hide Details")
 
-          Toggle(isOn: $store.isOn) { Text("Rx\(store.channel)").frame(width:30) }
+          Toggle(isOn: $store.ch.isOn) { Text("Rx\(store.ch.channel)").frame(width:30) }
             .toggleStyle(.button)
-            .disabled(store.deviceUid == nil /* || store.sliceLetter == nil */)
+            .disabled(store.ch.deviceUid == nil /* || store.sliceLetter == nil */)
 
           Spacer()
           Text(activeSlice == nil ? "No Slice" : "Slice " + activeSlice!)
@@ -62,14 +62,14 @@ struct DaxRxView: View {
           Text(status).frame(width: 140)
         }
         
-        if store.showDetails {
+        if store.ch.showDetails {
           Grid(alignment: .leading, horizontalSpacing: 10) {
             
             GridRow {
               Text("Output Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.deviceUid) {
+              Picker("", selection: $store.ch.deviceUid) {
                 Text("none").tag(nil as String?)
-                ForEach(store.devices, id: \.uid) {
+                ForEach(store.audioDevices, id: \.uid) {
                   if $0.hasOutput { Text($0.name!).tag($0.uid as String?) }
                 }
               }
@@ -79,9 +79,9 @@ struct DaxRxView: View {
             GridRow {
               HStack {
                 Text("Gain")
-                Text("\(Int(store.gain))").frame(width: 40, alignment: .trailing)
+                Text("\(Int(store.ch.gain))").frame(width: 40, alignment: .trailing)
               }
-              Slider(value: $store.gain, in: 0...100, label: {
+              Slider(value: $store.ch.gain, in: 0...100, label: {
               })
             }
           }
@@ -96,9 +96,9 @@ struct DaxRxView: View {
       .onAppear {
         store.send(.onAppear)
       }
-      .onChange(of: activeSlice) {
-        store.send(.activeSliceChanged($1))
-      }
+//      .onChange(of: activeSlice) {
+//        store.send(.activeSliceChanged($1))
+//      }
       .onChange(of: store.isConnected) {
         store.send(.isConnectedChanged)
       }
@@ -112,7 +112,7 @@ struct DaxRxView: View {
 
 #Preview {
   DaxRxView(
-    store: Store(initialState: DaxRxCore.State(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: true, isConnected: Shared(false))) {
+    store: Store(initialState: DaxRxCore.State(ch: RxChannel(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: false), isConnected: Shared(false))) {
       DaxRxCore()
     }
   )

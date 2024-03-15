@@ -301,7 +301,7 @@ public struct SDRDaxCore {
         // MARK: - Dax MIC Actions
         
       case let .micStates(.element(id: channel, action: _)):
-        state.micChannels[channel - 1] = MicChannel(channel: channel, deviceUid: state.micStates[id: channel]!.deviceUid, gain: state.micStates[id: channel]!.gain, isOn: state.micStates[id: channel]!.isOn, showDetails: state.micStates[id: channel]!.showDetails)
+        state.micChannels[channel - 1] = state.micStates[id: channel]!.ch
         UserDefaults.saveStructToSettings("daxMicChannels", state.micChannels, defaults: UserDefaults.standard)
         return .none
 
@@ -312,7 +312,7 @@ public struct SDRDaxCore {
         // MARK: - Dax RX Actions
         
       case let .rxStates(.element(id: channel, action: _)):
-        state.rxChannels[channel - 1] = RxChannel(channel: channel, deviceUid: state.rxStates[id: channel]!.deviceUid, gain: state.rxStates[id: channel]!.gain, isOn: state.rxStates[id: channel]!.isOn, showDetails: state.rxStates[id: channel]!.showDetails)
+        state.rxChannels[channel - 1] = state.rxStates[id: channel]!.ch
         UserDefaults.saveStructToSettings("daxRxChannels", state.rxChannels, defaults: UserDefaults.standard)
         return .none
 
@@ -461,14 +461,25 @@ public struct SDRDaxCore {
         DaxIqCore.State(ch: state.iqChannels[2], isConnected: state.$isConnected),
         DaxIqCore.State(ch: state.iqChannels[3], isConnected: state.$isConnected),
       ]
+//      state.micStates = [
+//        DaxMicCore.State(channel: state.micChannels[0].channel, deviceUid: state.micChannels[0].deviceUid, gain: state.micChannels[0].gain, isOn: state.micChannels[0].isOn, showDetails: state.micChannels[0].showDetails, isConnected: state.$isConnected),
+//      ]
+
       state.micStates = [
-        DaxMicCore.State(channel: state.micChannels[0].channel, deviceUid: state.micChannels[0].deviceUid, gain: state.micChannels[0].gain, isOn: state.micChannels[0].isOn, showDetails: state.micChannels[0].showDetails, isConnected: state.$isConnected),
+        DaxMicCore.State(ch: state.micChannels[0], isConnected: state.$isConnected),
       ]
+//      state.rxStates = [
+//        DaxRxCore.State(channel: state.rxChannels[0].channel, deviceUid: state.rxChannels[0].deviceUid, gain: state.rxChannels[0].gain, isOn: state.rxChannels[0].isOn, showDetails: state.rxChannels[0].showDetails, isConnected: state.$isConnected),
+//        DaxRxCore.State(channel: state.rxChannels[1].channel, deviceUid: state.rxChannels[1].deviceUid, gain: state.rxChannels[1].gain, isOn: state.rxChannels[1].isOn, showDetails: state.rxChannels[1].showDetails, isConnected: state.$isConnected),
+//        DaxRxCore.State(channel: state.rxChannels[2].channel, deviceUid: state.rxChannels[2].deviceUid, gain: state.rxChannels[2].gain, isOn: state.rxChannels[2].isOn, showDetails: state.rxChannels[2].showDetails, isConnected: state.$isConnected),
+//        DaxRxCore.State(channel: state.rxChannels[3].channel, deviceUid: state.rxChannels[3].deviceUid, gain: state.rxChannels[3].gain, isOn: state.rxChannels[3].isOn, showDetails: state.rxChannels[3].showDetails, isConnected: state.$isConnected),
+//      ]
+
       state.rxStates = [
-        DaxRxCore.State(channel: state.rxChannels[0].channel, deviceUid: state.rxChannels[0].deviceUid, gain: state.rxChannels[0].gain, isOn: state.rxChannels[0].isOn, showDetails: state.rxChannels[0].showDetails, isConnected: state.$isConnected),
-        DaxRxCore.State(channel: state.rxChannels[1].channel, deviceUid: state.rxChannels[1].deviceUid, gain: state.rxChannels[1].gain, isOn: state.rxChannels[1].isOn, showDetails: state.rxChannels[1].showDetails, isConnected: state.$isConnected),
-        DaxRxCore.State(channel: state.rxChannels[2].channel, deviceUid: state.rxChannels[2].deviceUid, gain: state.rxChannels[2].gain, isOn: state.rxChannels[2].isOn, showDetails: state.rxChannels[2].showDetails, isConnected: state.$isConnected),
-        DaxRxCore.State(channel: state.rxChannels[3].channel, deviceUid: state.rxChannels[3].deviceUid, gain: state.rxChannels[3].gain, isOn: state.rxChannels[3].isOn, showDetails: state.rxChannels[3].showDetails, isConnected: state.$isConnected),
+        DaxRxCore.State(ch: state.rxChannels[0], isConnected: state.$isConnected),
+        DaxRxCore.State(ch: state.rxChannels[1], isConnected: state.$isConnected),
+        DaxRxCore.State(ch: state.rxChannels[2], isConnected: state.$isConnected),
+        DaxRxCore.State(ch: state.rxChannels[3], isConnected: state.$isConnected),
       ]
 
       state.txStates = [
