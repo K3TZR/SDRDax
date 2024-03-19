@@ -29,7 +29,7 @@ struct SDRDaxView: View {
   var body: some View {
     VStack(alignment: .leading) {
       HStack(spacing: 10) {
-        if store.autoStart {
+        if store.autoStartEnabled {
           // use the default Station
           Text("Station")
           if store.autoSelection == nil {
@@ -91,6 +91,10 @@ struct SDRDaxView: View {
       store.send(.onAppear)
     }
     
+    .onDisappear() {
+      store.send(.onDisappear)
+    }
+    
     // Alert
     .alert($store.scope(state: \.showAlert, action: \.alert))
     
@@ -103,15 +107,9 @@ struct SDRDaxView: View {
         HStack {
           Text("Modes")
           VStack(spacing: 0) {
-            Toggle(isOn: $store.smartlinkEnabled) {
-              Text(store.smartlinkEnabled ? "Smartlink" : "Local").frame(width: 60)
-            }
-            Toggle(isOn: $store.autoStart) {
-              Text(store.autoStart ? "Auto" : "Manual").frame(width: 60)
-            }.disabled(true)
-          }
-          .toggleStyle(.button)
-          .controlSize(.small)
+            Text(store.smartlinkEnabled ? "Smartlink" : "Local").frame(width: 60)
+            Text(store.autoStartEnabled ? "Auto" : "Manual").frame(width: 60)
+          }.controlSize(.small)
         }
       }
     }
@@ -121,47 +119,47 @@ struct SDRDaxView: View {
 private struct DaxSelectionView: View {
   @Bindable var store: StoreOf<SDRDaxCore>
   
-  private func toggleOption(_ option: DaxPanelOptions) {
-    if store.daxPanelOptions.contains(option) {
-      store.daxPanelOptions.remove(option)
-    } else {
-      store.daxPanelOptions.insert(option)
-    }
-  }
+//  private func toggleOption(_ option: DaxPanelOptions) {
+//    if store.daxPanelOptions.contains(option) {
+//      store.daxPanelOptions.remove(option)
+//    } else {
+//      store.daxPanelOptions.insert(option)
+//    }
+//  }
   
   var body: some View {
     
     VStack(alignment: .center) {
-      HStack {
-        // segmented contol to select DAX type(s)
-        ControlGroup {
-          Toggle("Tx", isOn: Binding(get: { store.daxPanelOptions.contains(.tx) }, set: {_,_  in toggleOption(.tx) } )).disabled(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-          Toggle("Mic", isOn: Binding(get: { store.daxPanelOptions.contains(.mic)  }, set: {_,_  in toggleOption(.mic) } ))
-          Toggle("Rx", isOn: Binding(get: { store.daxPanelOptions.contains(.rx)  }, set: {_,_  in toggleOption(.rx) } ))
-          Toggle("IQ", isOn: Binding(get: { store.daxPanelOptions.contains(.iq)  }, set: {_,_  in toggleOption(.iq) } )).disabled(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-        }
-      }
+//      HStack {
+//        // segmented contol to select DAX type(s)
+//        ControlGroup {
+//          Toggle("Tx", isOn: Binding(get: { store.daxPanelOptions.contains(.tx) }, set: {_,_  in toggleOption(.tx) } )).disabled(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+//          Toggle("Mic", isOn: Binding(get: { store.daxPanelOptions.contains(.mic)  }, set: {_,_  in toggleOption(.mic) } ))
+//          Toggle("Rx", isOn: Binding(get: { store.daxPanelOptions.contains(.rx)  }, set: {_,_  in toggleOption(.rx) } ))
+//          Toggle("IQ", isOn: Binding(get: { store.daxPanelOptions.contains(.iq)  }, set: {_,_  in toggleOption(.iq) } )).disabled(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
+//        }
+//      }
       
-      if store.autoStart && !store.isConnected {
+      if store.autoStartEnabled && !store.isConnected {
         SpinnerView()
       } else {
         
         // scrollview to display selected DAX panels
         ScrollView {
           VStack(spacing: 5) {
-            if store.daxPanelOptions.contains(.tx) {
+            if store.txEnabled {
               ForEach(store.scope(state: \.txStates, action: \.txStates)) { store in
                 DaxTxView(store: store)
               }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
-            if store.daxPanelOptions.contains(.mic) {
+            if store.micEnabled {
               ForEach(store.scope(state: \.micStates, action: \.micStates)) { store in
                 DaxMicView(store: store)
               }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
-            if store.daxPanelOptions.contains(.rx) {
+            if store.rxEnabled {
               ForEach(store.scope(state: \.rxStates, action: \.rxStates)) { store in
                 VStack(spacing: 5) {
                   DaxRxView(store: store)
@@ -170,7 +168,7 @@ private struct DaxSelectionView: View {
               }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
-            if store.daxPanelOptions.contains(.iq) {
+            if store.iqEnabled {
               ForEach(store.scope(state: \.iqStates, action: \.iqStates)) { store in
                 VStack(spacing: 5) {
                   DaxIqView(store: store)
@@ -188,7 +186,12 @@ private struct DaxSelectionView: View {
 
 #Preview {
   SDRDaxView(
-    store: Store(initialState: SDRDaxCore.State()) {
+    store: Store(initialState: SDRDaxCore.State(iqEnabled: Shared(true),
+                                                micEnabled: Shared(true),
+                                                rxEnabled: Shared(true),
+                                                txEnabled: Shared(true), 
+                                                autoStartEnabled: Shared(false),
+                                                smartlinkEnabled: Shared(true))) {
       SDRDaxCore()
     }
   )

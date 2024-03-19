@@ -24,22 +24,17 @@ struct DaxRxView: View {
 //    return "Rx\(store.ch.channel)"
 //  }
   
-  @MainActor private var activeSlice: String? {
-    var letter: String?
+  @MainActor private var activeSlice: String {
     for slice in apiModel.slices where slice.daxChannel == store.ch.channel {
-      letter = slice.sliceLetter
+      return SliceStatus.sliceFound.rawValue + (slice.sliceLetter ?? "")
     }
-    return letter
+    if store.ch.isOn {
+      return SliceStatus.waiting.rawValue
+    } else {
+      return SliceStatus.sliceNotFound.rawValue
+    }
   }
     
-  @MainActor private var status: String {
-    if store.ch.isOn {
-      return activeSlice == nil ? "Waiting" : store.status.rawValue
-    } else {
-      return "Off"
-    }
-  }
-  
   var body: some View {
     
     GroupBox {
@@ -56,10 +51,10 @@ struct DaxRxView: View {
             .disabled(store.ch.deviceUid == nil /* || store.sliceLetter == nil */)
 
           Spacer()
-          Text(activeSlice == nil ? "No Slice" : "Slice " + activeSlice!)
-            .foregroundColor(activeSlice == nil ? .red : .green)
+          Text(activeSlice)
+            .foregroundColor(activeSlice == SliceStatus.sliceNotFound.rawValue ? .red : .green)
             .frame(width: 90)
-          Text(status).frame(width: 140)
+          Text(store.streamStatus.rawValue).frame(width: 140)
         }
         
         if store.ch.showDetails {
@@ -85,11 +80,7 @@ struct DaxRxView: View {
               })
             }
           }
-//          if store.audioOutput != nil {
-            LevelIndicatorView(levels: store.audioOutput?.levels ?? SignalLevel(rms: -40, peak: -40), type: .dax)
-//          } else {
-//            LevelIndicatorView(levels: SignalLevel(rms: -40, peak: -40), type: .dax)
-//          }
+          LevelIndicatorView(levels: store.audioOutput?.levels ?? SignalLevel(rms: -40, peak: -40), type: .dax)
         }
       }
             

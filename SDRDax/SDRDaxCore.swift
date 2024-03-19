@@ -67,24 +67,24 @@ public struct SDRDaxCore {
   // MARK: - State
   
   @ObservableState
-  public struct State: Equatable {
-    public static func == (lhs: SDRDaxCore.State, rhs: SDRDaxCore.State) -> Bool {
-      lhs.daxPanelOptions == rhs.daxPanelOptions
-    }
+  public struct State {
+//    public static func == (lhs: SDRDaxCore.State, rhs: SDRDaxCore.State) -> Bool {
+//      lhs.daxPanelOptions == rhs.daxPanelOptions
+//    }
     
     let AppDefaults = UserDefaults.standard
     
-    // persistent
-    var autoStart = false                           {didSet { AppDefaults.set(autoStart, forKey: "autoStart")}}
-    var daxPanelOptions: DaxPanelOptions = []       {didSet { AppDefaults.set(daxPanelOptions.rawValue, forKey: "daxPanelOptions")}}
-    var lowBandwidthDax = false                     {didSet { AppDefaults.set(lowBandwidthDax, forKey: "lowBandwidthDax")}}
-    var mtuValue = 1_300                            {didSet { AppDefaults.set(mtuValue, forKey: "mtuValue")}}
-    var previousIdToken: String?                    {didSet { AppDefaults.set(previousIdToken, forKey: "previousIdToken")}}
-    var refreshToken: String?                       {didSet { AppDefaults.set(refreshToken, forKey: "refreshToken")}}
-    var autoSelection: String?                      {didSet { AppDefaults.set(autoSelection, forKey: "autoSelection")}}
-    var smartlinkEnabled = false                    {didSet { AppDefaults.set(smartlinkEnabled, forKey: "smartlinkEnabled")}}
-    var smartlinkLoginRequired = false              {didSet { AppDefaults.set(smartlinkLoginRequired, forKey: "smartlinkLoginRequired")}}
-    var smartlinkUser = ""                          {didSet { AppDefaults.set(smartlinkUser, forKey: "smartlinkUser")}}
+    
+//    var autoStart = false                        {didSet { AppDefaults.set(autoStart, forKey: "autoStart")}}
+//    var daxPanelOptions: DaxPanelOptions = []    {didSet { AppDefaults.set(daxPanelOptions.rawValue, forKey: "daxPanelOptions")}}
+    var lowBandwidthDax = false                  {didSet { AppDefaults.set(lowBandwidthDax, forKey: "lowBandwidthDax")}}
+    var mtuValue = 1_300                         {didSet { AppDefaults.set(mtuValue, forKey: "mtuValue")}}
+    var previousIdToken: String?                 {didSet { AppDefaults.set(previousIdToken, forKey: "previousIdToken")}}
+    var refreshToken: String?                    {didSet { AppDefaults.set(refreshToken, forKey: "refreshToken")}}
+    var autoSelection: String?                   {didSet { AppDefaults.set(autoSelection, forKey: "autoSelection")}}
+//    var smartlinkEnabled = false                 {didSet { AppDefaults.set(smartlinkEnabled, forKey: "smartlinkEnabled")}}
+    var smartlinkLoginRequired = false           {didSet { AppDefaults.set(smartlinkLoginRequired, forKey: "smartlinkLoginRequired")}}
+    var smartlinkUser = ""                       {didSet { AppDefaults.set(smartlinkUser, forKey: "smartlinkUser")}}
     
     var iqChannels = [IqChannel(channel: 1, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: false),
                       IqChannel(channel: 2, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: false),
@@ -117,6 +117,14 @@ public struct SDRDaxCore {
     @Presents var showLogin: LoginFeature.State?
     
     @Shared(.inMemory("isConnected")) var isConnected = false
+
+    @Shared var iqEnabled: Bool
+    @Shared var micEnabled: Bool
+    @Shared var rxEnabled: Bool
+    @Shared var txEnabled: Bool
+    
+    @Shared var autoStartEnabled: Bool
+    @Shared var smartlinkEnabled: Bool
   }
   
   // ----------------------------------------------------------------------------
@@ -126,6 +134,7 @@ public struct SDRDaxCore {
     case binding(BindingAction<State>)
     case connect
     case onAppear
+    case onDisappear
     case setAutoSelection(String?)
     
     // subview actions
@@ -188,6 +197,11 @@ public struct SDRDaxCore {
       case .onAppear:
         // perform initialization
         return .concatenate( initState(&state))
+        
+      case .onDisappear:
+        return .run {_ in
+          await closeAuxiliaryWindows()
+        }
         
       case .connect:
         return connect(state)
@@ -419,14 +433,14 @@ public struct SDRDaxCore {
     if state.initialized == false {
       
       // load from User Defaults (use default value if not in User Defaults)
-      state.autoStart = UserDefaults.standard.bool(forKey: "autoStart")
-      state.daxPanelOptions = DaxPanelOptions(rawValue: UInt8(UserDefaults.standard.integer(forKey: "daxPanelOptions")))
+//      state.autoStart = UserDefaults.standard.bool(forKey: "autoStart")
+//      state.daxPanelOptions = DaxPanelOptions(rawValue: UInt8(UserDefaults.standard.integer(forKey: "daxPanelOptions")))
       state.lowBandwidthDax = UserDefaults.standard.bool(forKey: "lowBandwidthDax")
       state.mtuValue = UserDefaults.standard.integer(forKey: "mtuValue")
       state.previousIdToken = UserDefaults.standard.string(forKey: "previousIdToken")
       state.refreshToken = UserDefaults.standard.string(forKey: "refreshToken")
       state.autoSelection = UserDefaults.standard.string(forKey: "autoSelection") ?? nil
-      state.smartlinkEnabled = UserDefaults.standard.bool(forKey: "smartlinkEnabled")
+//      state.smartlinkEnabled = UserDefaults.standard.bool(forKey: "smartlinkEnabled")
       state.smartlinkLoginRequired = UserDefaults.standard.bool(forKey: "smartlinkLoginRequired")
       state.smartlinkUser = UserDefaults.standard.string(forKey: "smartlinkUser") ?? ""
             

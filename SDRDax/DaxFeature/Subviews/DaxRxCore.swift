@@ -29,7 +29,7 @@ public struct DaxRxCore {
     var audioOutput: DaxAudioPlayer?
     let audioDevices = AudioDevice.getDevices()
     var sliceLetter: String = "NO Slice"
-    var status: DaxStatus = .off
+    var streamStatus: StreamStatus = .off
 
     public var id: Int { ch.channel }
   }
@@ -67,7 +67,7 @@ public struct DaxRxCore {
 
       case .onDisappear:
         // if Streaming, stop streaming
-        if state.isConnected && state.status == .streaming {
+        if state.isConnected && state.streamStatus == .streaming {
           return daxStop(&state)
         }
         return .none
@@ -95,17 +95,17 @@ public struct DaxRxCore {
     state.audioOutput?.setGain(state.ch.gain)
 
     // Start (CONNECTED, status OFF, is ON, DEVICE selected)
-    if state.isConnected && state.status == .off && state.ch.isOn && state.ch.deviceUid != nil {
+    if state.isConnected && state.streamStatus == .off && state.ch.isOn && state.ch.deviceUid != nil {
       return daxStart(&state)
     }
 
     // Stop (CONNECTED, not ON or no DEVICE)
-    if state.isConnected && state.status == .streaming && (!state.ch.isOn || state.ch.deviceUid == nil) {
+    if state.isConnected && state.streamStatus == .streaming && (!state.ch.isOn || state.ch.deviceUid == nil) {
       return daxStop(&state)
     }
 
     // Stop (not CONNECTED, status STREAMING)
-    if !state.isConnected && state.status == .streaming {
+    if !state.isConnected && state.streamStatus == .streaming {
       return daxStop(&state)
     }
     return .none
@@ -113,7 +113,7 @@ public struct DaxRxCore {
   
   private func daxStart(_ state: inout State) -> Effect<DaxRxCore.Action> {
     state.audioOutput = DaxAudioPlayer(deviceId: getDeviceId(state), gain: state.ch.gain, sampleRate: 24_000)
-    state.status = .streaming
+    state.streamStatus = .streaming
     return .run { [state] send in
       // request a stream, reply to handler
       await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.ch.channel, replyTo: state.audioOutput!.streamReplyHandler)
@@ -122,7 +122,7 @@ public struct DaxRxCore {
   }
 
   private func daxStop(_ state: inout State) -> Effect<DaxRxCore.Action> {
-    state.status = .off
+    state.streamStatus = .off
     state.audioOutput?.stop()
     state.audioOutput = nil
     return .run { [streamId = state.audioOutput?.streamId, channel = state.ch.channel] _ in

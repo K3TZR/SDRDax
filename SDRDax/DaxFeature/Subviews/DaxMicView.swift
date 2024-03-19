@@ -33,7 +33,7 @@ struct DaxMicView: View {
             .disabled(store.ch.deviceUid == nil /* || store.sliceLetter == nil */)
 
           Spacer()
-          Text(store.status.rawValue).frame(width: 140)
+          Text(store.streamStatus.rawValue).frame(width: 140)
         }
         
         if store.ch.showDetails {
@@ -59,11 +59,7 @@ struct DaxMicView: View {
               })
             }
           }
-          if store.audioOutput != nil {
-            LevelIndicatorView(levels: store.audioOutput!.levels, type: .dax)
-          } else {
-            LevelIndicatorView(levels: SignalLevel(rms: -40, peak: -40), type: .dax)
-          }
+          LevelIndicatorView(levels: store.audioOutput?.levels ?? SignalLevel(rms: -40, peak: -40), type: .dax)
         }
       }
       
