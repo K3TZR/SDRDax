@@ -28,15 +28,6 @@
       }
     },
     {
-      "identity" : "sdrapifeatures",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/K3TZR/SDRApiFeatures.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "d94c9ba29352d715f1b588e36ddfad7fe07e2fbe"
-      }
-    },
-    {
       "identity" : "swift-case-paths",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/pointfreeco/swift-case-paths",

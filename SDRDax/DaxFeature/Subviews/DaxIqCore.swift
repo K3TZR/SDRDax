@@ -23,15 +23,20 @@ public struct DaxIqCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    var ch: IqChannel
-    var frequency: Double?
-    var status = "Off"
+    let channel: Int
+    var deviceUid: String?
+    var isOn: Bool
+    var sampleRate: Double
+    var showDetails: Bool
     @Shared var isConnected: Bool
+    @Shared var isActive: Bool
 
     var audioOutput: DaxAudioPlayer?
     let devices = AudioDevice.getDevices()
-    
-    public var id: Int { ch.channel }
+    var frequency: Double?
+    var streamStatus = "Off"
+
+    public var id: Int { channel }
   }
   
   // ----------------------------------------------------------------------------
@@ -40,7 +45,7 @@ public struct DaxIqCore {
   public enum Action: BindableAction {
     case binding(BindingAction<State>)
     
-    case isActiveChanged
+    case isConnectedChanged
     case onAppear
     case onDisappear
   }
@@ -59,26 +64,25 @@ public struct DaxIqCore {
         
       case .onAppear:
         // if Active and isOn, start streaming
-        if state.isConnected && state.ch.isOn {
+        if state.isConnected && state.isOn {
           return iqStart(&state)
         }
         return .none
         
       case .onDisappear:
         // if Streaming, stop streaming
-        state.isConnected = false
-        if state.ch.isOn && state.isConnected {
+        if state.isOn && state.isConnected {
           return iqStop(&state)
         }
         return .none
         
-      case .isActiveChanged:
+      case .isConnectedChanged:
         // if now Active and isOn, start streaming
-        if state.isConnected && state.ch.isOn {
+        if state.isConnected && state.isOn {
           return iqStart(&state)
         }
         // if now not Active and isOn, stop streaming
-        if !state.isConnected && state.ch.isOn {
+        if !state.isConnected && state.isOn {
           return iqStop(&state)
         }
         return .none
@@ -89,10 +93,10 @@ public struct DaxIqCore {
       case .binding(_):
         // DeviceId, Gain, or isOn changed
         state.audioOutput?.deviceId = getDeviceId(state)
-        if state.ch.isOn && state.isConnected {
+        if state.isOn && state.isConnected {
           return iqStart(&state)
         }
-        if !state.ch.isOn && state.isConnected {
+        if !state.isOn && state.isConnected {
           return iqStop(&state)
         }
         return .none
@@ -138,7 +142,7 @@ public struct DaxIqCore {
   }
   
   private func getDeviceId(_ state: State) -> AudioDeviceID {
-    for device in state.devices where device.uid == state.ch.deviceUid {
+    for device in state.devices where device.uid == state.deviceUid {
       return device.id
     }
     fatalError("DaxIqCore: Device Id NOT FOUND")

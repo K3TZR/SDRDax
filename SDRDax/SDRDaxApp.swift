@@ -10,18 +10,7 @@ import SwiftUI
 
 import FlexApiFeature
 import ListenerFeature
-import SharedFeature
-
-enum StreamStatus: String {
-  case off = "Off"
-  case streaming = "Streaming"
-}
-
-enum SliceStatus: String {
-  case sliceNotFound = "No Slice"
-  case sliceFound = "Slice "
-  case waiting = "Waiting"
-}
+import SharedFeature      // FIXME: replace with LogFeatures package
 
 // ----------------------------------------------------------------------------
 // MARK: - Main
@@ -32,21 +21,25 @@ struct SDRDaxApp: App {
   var appDelegate
   
   // persistent
+  @Shared(.appStorage("autoStartEnabled")) var autoStartEnabled: Bool = false
+  @Shared(.appStorage("smartlinkEnabled")) var smartlinkEnabled: Bool = false
+  
   @Shared(.appStorage("iqEnabled")) var iqEnabled: Bool = true
   @Shared(.appStorage("micEnabled")) var micEnabled: Bool = true
   @Shared(.appStorage("rxEnabled")) var rxEnabled: Bool = true
   @Shared(.appStorage("txEnabled")) var txEnabled: Bool = true
   
-  @Shared(.appStorage("autoStartEnabled")) var autoStartEnabled: Bool = false
-  @Shared(.appStorage("smartlinkEnabled")) var smartlinkEnabled: Bool = false
-
-
   @State var apiModel = ApiModel.shared
   @State var listenerModel = ListenerModel.shared
   
   var body: some Scene {
     WindowGroup("SDRDax  (v" + Version().string + ")") {
-      SDRDaxView(store: Store(initialState: SDRDaxCore.State(iqEnabled: $iqEnabled, micEnabled: $micEnabled, rxEnabled: $rxEnabled, txEnabled: $txEnabled, autoStartEnabled: $autoStartEnabled, smartlinkEnabled: $smartlinkEnabled)) {
+      SDRDaxView(store: Store(initialState: SDRDaxCore.State(iqEnabled: $iqEnabled, 
+                                                             micEnabled: $micEnabled,
+                                                             rxEnabled: $rxEnabled,
+                                                             txEnabled: $txEnabled,
+                                                             autoStartEnabled: $autoStartEnabled,
+                                                             smartlinkEnabled: $smartlinkEnabled)) {
         SDRDaxCore()
       })
       .frame(minWidth: 370, maxWidth: 370)
@@ -60,9 +53,16 @@ struct SDRDaxApp: App {
     
     // Settings window
     Settings {
-      SDRDaxSettingsView(store: Store(initialState: SDRDaxSettingsCore.State(iqEnabled: $iqEnabled, micEnabled: $micEnabled, rxEnabled: $rxEnabled, txEnabled: $txEnabled, autoStartEnabled: $autoStartEnabled, smartlinkEnabled: $smartlinkEnabled)) {
+      SDRDaxSettingsView(store: Store(initialState: SDRDaxSettingsCore.State(iqEnabled: $iqEnabled, 
+                                                                             micEnabled: $micEnabled,
+                                                                             rxEnabled: $rxEnabled,
+                                                                             txEnabled: $txEnabled,
+                                                                             autoStartEnabled: $autoStartEnabled,
+                                                                             smartlinkEnabled: $smartlinkEnabled)) {
         SDRDaxSettingsCore()
       })
+      .frame(width: 300, height: 140)
+      .padding()
     }
     .windowStyle(.hiddenTitleBar)
     .windowResizability(WindowResizability.contentSize)
@@ -103,7 +103,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 }
 
 // ----------------------------------------------------------------------------
-// MARK: - Global struct
+// MARK: - Globals
 
 /// Struct to hold a Semantic Version number
 public struct Version {
@@ -128,3 +128,15 @@ public struct Version {
   
   public var string: String { "\(major).\(minor).\(build)" }
 }
+
+enum StreamStatus: String {
+  case off = "Off"
+  case streaming = "Streaming"
+}
+
+enum SliceStatus: String {
+  case sliceNotFound = "No Slice"
+  case sliceFound = "Slice "
+  case waiting = "Waiting"
+}
+

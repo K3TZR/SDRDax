@@ -23,14 +23,20 @@ public struct DaxTxCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    var ch: TxChannel
+    let channel: Int
+    var deviceUid: String?
+    var gain: Double
+    var isOn: Bool
+    var showDetails: Bool
     var status = "Off"
     @Shared var isConnected: Bool
+    @Shared var isActive: Bool
 
     var audioOutput: DaxAudioPlayer?
     let devices = AudioDevice.getDevices()
-    
-    public var id: Int { ch.channel }
+    var streamStatus = "Off"
+
+    public var id: Int { channel }
   }
   
   // ----------------------------------------------------------------------------
@@ -58,26 +64,25 @@ public struct DaxTxCore {
         
       case .onAppear:
         // if Active and isOn, start streaming
-        if state.isConnected && state.ch.isOn {
+        if state.isConnected && state.isOn {
           return txStart(&state)
         }
         return .none
         
       case .onDisappear:
         // if Streaming, stop streaming
-        state.isConnected = false
-        if state.ch.isOn && state.isConnected {
+        if state.isOn && state.isConnected {
           return txStop(&state)
         }
         return .none
         
       case .isConnectedChanged:
         // if now Active and isOn, start streaming
-        if state.isConnected && state.ch.isOn {
+        if state.isConnected && state.isOn {
           return txStart(&state)
         }
         // if now not Active and isOn, stop streaming
-        if !state.isConnected && state.ch.isOn {
+        if !state.isConnected && state.isOn {
           return txStop(&state)
         }
         return .none
@@ -88,10 +93,10 @@ public struct DaxTxCore {
       case .binding(_):
         // DeviceId or isOn changed
         state.audioOutput?.deviceId = getDeviceId(state)
-        if state.ch.isOn && state.isConnected {
+        if state.isOn && state.isConnected {
           return txStart(&state)
         }
-        if !state.ch.isOn && state.isConnected {
+        if !state.isOn && state.isConnected {
           return txStop(&state)
         }
         return .none
@@ -137,7 +142,7 @@ public struct DaxTxCore {
   }
   
   private func getDeviceId(_ state: State) -> AudioDeviceID {
-    for device in state.devices where device.uid == state.ch.deviceUid {
+    for device in state.devices where device.uid == state.deviceUid {
       return device.id
     }
     fatalError("DaxTxCore: Device Id NOT FOUND")

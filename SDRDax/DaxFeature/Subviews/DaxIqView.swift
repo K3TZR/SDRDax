@@ -22,26 +22,26 @@ struct DaxIqView: View {
     GroupBox {
       VStack(alignment: .leading) {
         HStack(spacing: 10) {
-          Image(systemName: store.ch.showDetails ? "chevron.up.square" : "chevron.down.square").font(.title)
+          Image(systemName: store.showDetails ? "chevron.up.square" : "chevron.down.square").font(.title)
             .onTapGesture {
-              store.ch.showDetails.toggle()
+              store.showDetails.toggle()
             }
             .help("Show / Hide Details")
-          Toggle(isOn: $store.ch.isOn) { Text("Iq\(store.ch.channel)").frame(width: 30) }
+          Toggle(isOn: $store.isOn) { Text("Iq\(store.channel)").frame(width: 30) }
             .toggleStyle(.button)
-            .disabled(store.ch.deviceUid == nil)
+            .disabled(store.deviceUid == nil)
           
           Spacer()
           Text("\(store.frequency == nil ? "No Pan" : String(format: "%2.6f", store.frequency!))")
             .frame(width: 90)
-          Text(store.status).frame(width: 140)
+          Text(store.streamStatus).frame(width: 140)
         }
 
-        if store.ch.showDetails {
+        if store.showDetails {
           Grid(alignment: .leading, horizontalSpacing: 10) {
             GridRow {
               Text("Rate")
-              Picker("", selection: $store.ch.sampleRate) {
+              Picker("", selection: $store.sampleRate) {
                 ForEach(rates, id: \.self) {
                   Text("\($0)").tag($0)
                 }
@@ -52,7 +52,7 @@ struct DaxIqView: View {
             
             GridRow {
               Text("Output Device").frame(width: 100, alignment: .leading)
-              Picker("", selection: $store.ch.deviceUid) {
+              Picker("", selection: $store.deviceUid) {
                 Text("none").tag(nil as String?)
                 ForEach(store.devices, id: \.uid) {
                   if $0.hasOutput { Text($0.name!).tag($0.uid as String?) }
@@ -66,7 +66,7 @@ struct DaxIqView: View {
       
       // monitor isActive
       .onChange(of: store.isConnected) {
-        store.send(.isActiveChanged)
+        store.send(.isConnectedChanged)
       }
             
       // monitor opening
@@ -84,7 +84,7 @@ struct DaxIqView: View {
 
 #Preview {
   DaxIqView(
-    store: Store(initialState: DaxIqCore.State(ch: IqChannel(channel: 1, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: true), isConnected: Shared(false))) {
+    store: Store(initialState: DaxIqCore.State(channel: 1, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: false, isConnected: Shared(false), isActive: Shared(false))) {
       DaxIqCore()
     }
   )

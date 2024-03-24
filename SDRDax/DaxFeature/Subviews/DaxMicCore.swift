@@ -23,15 +23,20 @@ public struct DaxMicCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    var ch: MicChannel
+    let channel: Int
+    var deviceUid: String?
+    var gain: Double
+    var isOn: Bool
+    var showDetails: Bool
     @Shared var isConnected: Bool
+    @Shared var isActive: Bool
 
     var audioOutput: DaxAudioPlayer?
     let devices = AudioDevice.getDevices()
     var sliceLetter: String?
     var streamStatus: StreamStatus = .off
 
-    public var id: Int { ch.channel }
+    public var id: Int { channel }
   }
   
   // ----------------------------------------------------------------------------
@@ -59,7 +64,7 @@ public struct DaxMicCore {
         
       case .onAppear:
         // if Active and isOn, start streaming
-        if state.isConnected && state.ch.isOn {
+        if state.isConnected && state.isOn {
           return daxStart(&state)
         }
         return .none
@@ -87,16 +92,16 @@ public struct DaxMicCore {
   // MARK: - DAX effect methods
   
   private func updateState(_ state: inout State) -> Effect<DaxMicCore.Action> {
-    if state.ch.deviceUid != nil { state.audioOutput?.setDevice(getDeviceId(state)) }
-    state.audioOutput?.setGain(state.ch.gain)
+    if state.deviceUid != nil { state.audioOutput?.setDevice(getDeviceId(state)) }
+    state.audioOutput?.setGain(state.gain)
 
     // Start (CONNECTED, status OFF, is ON, DEVICE selected)
-    if state.isConnected && state.streamStatus == .off && state.ch.isOn && state.ch.deviceUid != nil {
+    if state.isConnected && state.streamStatus == .off && state.isOn && state.deviceUid != nil {
       return daxStart(&state)
     }
 
     // Stop (CONNECTED, not ON or no DEVICE)
-    if state.isConnected && state.streamStatus == .streaming && (!state.ch.isOn || state.ch.deviceUid == nil) {
+    if state.isConnected && state.streamStatus == .streaming && (!state.isOn || state.deviceUid == nil) {
       return daxStop(&state)
     }
 
@@ -108,12 +113,12 @@ public struct DaxMicCore {
   }
   
   private func daxStart(_ state: inout State) -> Effect<DaxMicCore.Action> {
-    state.audioOutput = DaxAudioPlayer(deviceId: getDeviceId(state), gain: state.ch.gain, sampleRate: 24_000)
+    state.audioOutput = DaxAudioPlayer(deviceId: getDeviceId(state), gain: state.gain, sampleRate: 24_000)
     state.streamStatus = .streaming
     return .run { [state] send in
       // request a stream, reply to handler
       await ApiModel.shared.requestDaxMicAudioStream(replyTo: state.audioOutput!.streamReplyHandler)
-      log("DaxMicCore: stream REQUESTED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
+      log("DaxMicCore: stream REQUESTED, channel = \(state.channel)", .debug, #function, #file, #line)
     }
   }
 
@@ -121,7 +126,7 @@ public struct DaxMicCore {
     state.streamStatus = .off
     state.audioOutput?.stop()
     state.audioOutput = nil
-    return .run { [streamId = state.audioOutput?.streamId, channel = state.ch.channel] _ in
+    return .run { [streamId = state.audioOutput?.streamId, channel = state.channel] _ in
       // remove stream(s)
       await ApiModel.shared.sendRemoveStreams([streamId])
       log("DaxMicCore: stream STOPPED, channel = \(channel)", .debug, #function, #file, #line)
@@ -129,7 +134,7 @@ public struct DaxMicCore {
   }
   
   private func getDeviceId(_ state: State) -> AudioDeviceID {
-    for device in state.devices where device.uid == state.ch.deviceUid {
+    for device in state.devices where device.uid == state.deviceUid {
       return device.id
     }
     fatalError("DaxMicCore: Device Id NOT FOUND")

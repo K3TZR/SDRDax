@@ -23,7 +23,7 @@ struct SDRDaxSettingsView: View {
       Picker(selection: $store.autoStartEnabled, label: Text("Mode")) {
         Text("Auto").tag(true)
         Text("Manual").tag(false)
-      }.disabled(true)
+      }
       .pickerStyle(.radioGroup)
       .horizontalRadioGroupLayout()
 
@@ -34,8 +34,6 @@ struct SDRDaxSettingsView: View {
         Toggle("Enable IQ", isOn: $store.iqEnabled)
       }.frame(width: 300)
     }
-    .frame(width: 300, height: 140)
-    .padding()
   }
 }
 

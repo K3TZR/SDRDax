@@ -29,7 +29,7 @@ struct SDRDaxView: View {
   var body: some View {
     VStack(alignment: .leading) {
       HStack(spacing: 10) {
-        if store.autoStartEnabled {
+        if store.autoStartEnabled && store.autoSelection != nil {
           // use the default Station
           Text("Station")
           if store.autoSelection == nil {
@@ -61,7 +61,7 @@ struct SDRDaxView: View {
           }
           .labelsHidden()
           
-          Image(systemName: "circle.fill").foregroundColor(store.isConnected ? .green : .red)
+          Image(systemName: "circle.fill").foregroundColor(store.isActive ? .green : .red)
           Spacer()
           Image(systemName: "plus.circle").disabled(store.selection == nil)
             .help("SAVE DEFAULT")
@@ -119,28 +119,11 @@ struct SDRDaxView: View {
 private struct DaxSelectionView: View {
   @Bindable var store: StoreOf<SDRDaxCore>
   
-//  private func toggleOption(_ option: DaxPanelOptions) {
-//    if store.daxPanelOptions.contains(option) {
-//      store.daxPanelOptions.remove(option)
-//    } else {
-//      store.daxPanelOptions.insert(option)
-//    }
-//  }
-  
   var body: some View {
     
     VStack(alignment: .center) {
-//      HStack {
-//        // segmented contol to select DAX type(s)
-//        ControlGroup {
-//          Toggle("Tx", isOn: Binding(get: { store.daxPanelOptions.contains(.tx) }, set: {_,_  in toggleOption(.tx) } )).disabled(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-//          Toggle("Mic", isOn: Binding(get: { store.daxPanelOptions.contains(.mic)  }, set: {_,_  in toggleOption(.mic) } ))
-//          Toggle("Rx", isOn: Binding(get: { store.daxPanelOptions.contains(.rx)  }, set: {_,_  in toggleOption(.rx) } ))
-//          Toggle("IQ", isOn: Binding(get: { store.daxPanelOptions.contains(.iq)  }, set: {_,_  in toggleOption(.iq) } )).disabled(/*@START_MENU_TOKEN@*/true/*@END_MENU_TOKEN@*/)
-//        }
-//      }
       
-      if store.autoStartEnabled && !store.isConnected {
+      if store.autoStartEnabled && store.autoSelection != nil && !store.isConnected {
         SpinnerView()
       } else {
         

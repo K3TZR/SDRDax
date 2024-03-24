@@ -17,13 +17,13 @@ public struct SDRDaxSettingsCore {
   // MARK: - State
   
   @ObservableState
-  public struct State: Equatable {
-    public static func == (lhs: SDRDaxSettingsCore.State, rhs: SDRDaxSettingsCore.State) -> Bool {
-      lhs.iqEnabled == rhs.iqEnabled &&
-      lhs.micEnabled ==  rhs.micEnabled &&
-      lhs.rxEnabled ==  rhs.rxEnabled &&
-      lhs.txEnabled ==  rhs.txEnabled
-    }
+  public struct State {
+//    public static func == (lhs: SDRDaxSettingsCore.State, rhs: SDRDaxSettingsCore.State) -> Bool {
+//      lhs.iqEnabled == rhs.iqEnabled &&
+//      lhs.micEnabled ==  rhs.micEnabled &&
+//      lhs.rxEnabled ==  rhs.rxEnabled &&
+//      lhs.txEnabled ==  rhs.txEnabled
+//    }
         
     // persistent
     @Shared var iqEnabled: Bool
@@ -49,19 +49,19 @@ public struct SDRDaxSettingsCore {
     BindingReducer()
 
 
-    Reduce { state, action in
-      switch action {
-        
-        // ----------------------------------------------------------------------------
-        // MARK: - Root Actions
-        
-                
-        // ----------------------------------------------------------------------------
-        // MARK: - Root Binding Actions
-        
-      case .binding(_):
-        return .none
-      }
-    }
+//    Reduce { state, action in
+//      switch action {
+//        
+//        // ----------------------------------------------------------------------------
+//        // MARK: - Root Actions
+//        
+//                
+//        // ----------------------------------------------------------------------------
+//        // MARK: - Root Binding Actions
+//        
+//      case .binding(_):
+//        return .none
+//      }
+//    }
   }
 }

@@ -23,15 +23,19 @@ public struct DaxRxCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    var ch: RxChannel
+    let channel: Int
+    var deviceUid: String?
+    var gain: Double
+    var isOn: Bool
+    var showDetails: Bool
     @Shared var isConnected: Bool
+    @Shared var isActive: Bool
 
     var audioOutput: DaxAudioPlayer?
     let audioDevices = AudioDevice.getDevices()
-    var sliceLetter: String = "NO Slice"
     var streamStatus: StreamStatus = .off
 
-    public var id: Int { ch.channel }
+    public var id: Int { channel }
   }
   
   // ----------------------------------------------------------------------------
@@ -40,8 +44,6 @@ public struct DaxRxCore {
   public enum Action: BindableAction {
     case binding(BindingAction<State>)
 
-//    case activeSliceChanged(String?)
-    case isConnectedChanged
     case onAppear
     case onDisappear
   }
@@ -60,7 +62,7 @@ public struct DaxRxCore {
         
       case .onAppear:
         // if Active and isOn, start streaming
-        if state.isConnected && state.ch.isOn {
+        if state.isConnected && state.isOn {
           return daxStart(&state)
         }
         return .none
@@ -72,17 +74,43 @@ public struct DaxRxCore {
         }
         return .none
 
-//      case let .activeSliceChanged(letter):
-//        return .none
-
-      case .isConnectedChanged:
-        return updateState(&state)
-                
         // ----------------------------------------------------------------------------
         // MARK: - Binding Actions
                 
+      case .binding(\.deviceUid):
+        print("----->>>>> DaxRxCore: Binding deviceUid = \(state.deviceUid ?? "nil")")
+        state.audioOutput?.setDevice(getDeviceId(state))
+        if state.isOn {
+          // Start (CONNECTED, status OFF, DEVICE selected)
+          if state.isConnected && state.streamStatus == .off && state.deviceUid != nil {
+            return daxStart(&state)
+          }
+        }
+        return .none
+
+      case .binding(\.gain):
+        print("----->>>>> DaxRxCore: Binding gain = \(state.gain)")
+        state.audioOutput?.setGain(state.gain)
+        return .none
+
+      case .binding(\.isOn):
+        print("----->>>>> DaxRxCore: Binding isOn = \(state.isOn)")
+        if state.isOn {
+          // Start (CONNECTED, status OFF, DEVICE selected)
+          if state.isConnected && state.streamStatus == .off && state.deviceUid != nil {
+            return daxStart(&state)
+          }
+        } else {
+          // Stop (CONNECTED, status STREAMING)
+          if state.isConnected && state.streamStatus == .streaming {
+            return daxStop(&state)
+          }
+        }
+        return .none
+
       case .binding(_):
-        return updateState(&state)
+        print("----->>>>> DaxRxCore: Binding OTHER")
+        return .none
       }
     }
   }
@@ -90,34 +118,34 @@ public struct DaxRxCore {
   // ----------------------------------------------------------------------------
   // MARK: - DAX effect methods
   
-  private func updateState(_ state: inout State) -> Effect<DaxRxCore.Action> {
-    if state.ch.deviceUid != nil { state.audioOutput?.setDevice(getDeviceId(state)) }
-    state.audioOutput?.setGain(state.ch.gain)
-
-    // Start (CONNECTED, status OFF, is ON, DEVICE selected)
-    if state.isConnected && state.streamStatus == .off && state.ch.isOn && state.ch.deviceUid != nil {
-      return daxStart(&state)
-    }
-
-    // Stop (CONNECTED, not ON or no DEVICE)
-    if state.isConnected && state.streamStatus == .streaming && (!state.ch.isOn || state.ch.deviceUid == nil) {
-      return daxStop(&state)
-    }
-
-    // Stop (not CONNECTED, status STREAMING)
-    if !state.isConnected && state.streamStatus == .streaming {
-      return daxStop(&state)
-    }
-    return .none
-  }
+//  private func updateState(_ state: inout State) -> Effect<DaxRxCore.Action> {
+//    if state.deviceUid != nil { state.audioOutput?.setDevice(getDeviceId(state)) }
+//    state.audioOutput?.setGain(state.gain)
+//
+//    // Start (CONNECTED, status OFF, is ON, DEVICE selected)
+//    if state.connectionState == .connected && state.streamStatus == .off && state.isOn && state.deviceUid != nil {
+//      return daxStart(&state)
+//    }
+//
+//    // Stop (CONNECTED, not ON or no DEVICE)
+//    if state.connectionState == .connected && state.streamStatus == .streaming && (!state.isOn || state.deviceUid == nil) {
+//      return daxStop(&state)
+//    }
+//
+//    // Stop (not CONNECTED, status STREAMING)
+//    if state.connectionState != .connected && state.streamStatus == .streaming {
+//      return daxStop(&state)
+//    }
+//    return .none
+//  }
   
   private func daxStart(_ state: inout State) -> Effect<DaxRxCore.Action> {
-    state.audioOutput = DaxAudioPlayer(deviceId: getDeviceId(state), gain: state.ch.gain, sampleRate: 24_000)
+    state.audioOutput = DaxAudioPlayer(deviceId: getDeviceId(state), gain: state.gain, sampleRate: 24_000)
     state.streamStatus = .streaming
     return .run { [state] send in
       // request a stream, reply to handler
-      await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.ch.channel, replyTo: state.audioOutput!.streamReplyHandler)
-      log("DaxRxCore: stream REQUESTED, channel = \(state.ch.channel)", .debug, #function, #file, #line)
+      await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.channel, replyTo: state.audioOutput!.streamReplyHandler)
+      log("DaxRxCore: stream REQUESTED, channel = \(state.channel)", .debug, #function, #file, #line)
     }
   }
 
@@ -125,7 +153,7 @@ public struct DaxRxCore {
     state.streamStatus = .off
     state.audioOutput?.stop()
     state.audioOutput = nil
-    return .run { [streamId = state.audioOutput?.streamId, channel = state.ch.channel] _ in
+    return .run { [streamId = state.audioOutput?.streamId, channel = state.channel] _ in
       // remove stream(s)
       await ApiModel.shared.sendRemoveStreams([streamId])
       log("DaxRxCore: stream STOPPED, channel = \(channel)", .debug, #function, #file, #line)
@@ -133,7 +161,7 @@ public struct DaxRxCore {
   }
   
   private func getDeviceId(_ state: State) -> AudioDeviceID {
-    for device in state.audioDevices where device.uid == state.ch.deviceUid! {
+    for device in state.audioDevices where device.uid == state.deviceUid! {
       return device.id
     }
     fatalError("DaxRxCore: Device Id NOT FOUND")
