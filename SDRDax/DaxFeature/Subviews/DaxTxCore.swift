@@ -29,8 +29,8 @@ public struct DaxTxCore {
     var isOn: Bool
     var showDetails: Bool
     var status = "Off"
+
     @Shared var isConnected: Bool
-    @Shared var isActive: Bool
 
     var audioOutput: DaxAudioPlayer?
     let devices = AudioDevice.getDevices()

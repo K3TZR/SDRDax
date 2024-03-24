@@ -32,7 +32,6 @@ struct DaxTxView: View {
           Text("Status").frame(width: 90)
           Text(store.streamStatus).frame(width: 140)
         }
-//        .frame(width: 320)
 
         if store.showDetails{
           Grid(alignment: .topLeading, horizontalSpacing: 10) {
@@ -60,14 +59,15 @@ struct DaxTxView: View {
         }
       }
     }
-//    .frame(width: 320)
-//    .groupBoxStyle(PlainGroupBoxStyle())
   }
 }
 
-//#Preview {
-//  DaxTxView(store: Store(initialState: DaxTxCore.State()) {
-//    DaxTxCore()
-//  }, devices: [AudioDevice]())
-//    .frame(width: 320)
-//}
+#Preview {
+  DaxTxView(
+    store: Store(initialState: DaxTxCore.State(channel: 0, deviceUid: nil, gain: 50, isOn: false, showDetails: false, isConnected: Shared(false))) {
+      DaxTxCore()
+    }
+  )
+
+  .frame(minWidth: 370, maxWidth: 370)
+}

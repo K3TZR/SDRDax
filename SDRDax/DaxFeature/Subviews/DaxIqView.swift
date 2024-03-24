@@ -15,8 +15,6 @@ import SharedFeature
 struct DaxIqView: View {
   @Bindable var store: StoreOf<DaxIqCore>
   
-  private let rates = [24_000, 48_000, 96_000, 192_000]
-  
   var body: some View {
 
     GroupBox {
@@ -27,14 +25,14 @@ struct DaxIqView: View {
               store.showDetails.toggle()
             }
             .help("Show / Hide Details")
-          Toggle(isOn: $store.isOn) { Text("Iq\(store.channel)").frame(width: 30) }
+          Toggle(isOn: $store.isOn) { Text("IQ\(store.channel)").frame(width: 30) }
             .toggleStyle(.button)
             .disabled(store.deviceUid == nil)
           
           Spacer()
           Text("\(store.frequency == nil ? "No Pan" : String(format: "%2.6f", store.frequency!))")
             .frame(width: 90)
-          Text(store.streamStatus).frame(width: 140)
+          Text(store.streamStatus.rawValue).frame(width: 140)
         }
 
         if store.showDetails {
@@ -42,8 +40,8 @@ struct DaxIqView: View {
             GridRow {
               Text("Rate")
               Picker("", selection: $store.sampleRate) {
-                ForEach(rates, id: \.self) {
-                  Text("\($0)").tag($0)
+                ForEach(SampleRate.allCases, id: \.self) {
+                  Text("\($0.rawValue)").tag($0.rawValue)
                 }
               }
               .labelsHidden()
@@ -54,7 +52,7 @@ struct DaxIqView: View {
               Text("Output Device").frame(width: 100, alignment: .leading)
               Picker("", selection: $store.deviceUid) {
                 Text("none").tag(nil as String?)
-                ForEach(store.devices, id: \.uid) {
+                ForEach(store.audioDevices, id: \.uid) {
                   if $0.hasOutput { Text($0.name!).tag($0.uid as String?) }
                 }
               }
@@ -84,7 +82,7 @@ struct DaxIqView: View {
 
 #Preview {
   DaxIqView(
-    store: Store(initialState: DaxIqCore.State(channel: 1, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: false, isConnected: Shared(false), isActive: Shared(false))) {
+    store: Store(initialState: DaxIqCore.State(channel: 1, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: false, isConnected: Shared(false))) {
       DaxIqCore()
     }
   )

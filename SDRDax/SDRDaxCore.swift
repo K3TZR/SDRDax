@@ -22,7 +22,7 @@ public struct IqChannel: Identifiable, Equatable, Codable {
   public let channel: Int
   public var deviceUid: String?
   public var isOn: Bool
-  public var sampleRate: Double
+  public var sampleRate: Int
   public var showDetails: Bool
 
   public var id: Int { channel }
@@ -58,6 +58,13 @@ public struct TxChannel: Identifiable, Equatable, Codable {
   public var id: Int { channel }
 }
 
+enum SampleRate: Int, CaseIterable {
+  case r24 = 24_000
+  case r48 = 48_000
+  case r96 = 96_000
+  case r192 = 192_000
+}
+
 @Reducer
 public struct SDRDaxCore {
   
@@ -78,10 +85,10 @@ public struct SDRDaxCore {
     @Shared(.appStorage("smartlinkLoginRequired")) var smartlinkLoginRequired: Bool = false
     @Shared(.appStorage("smartlinkUser")) var smartlinkUser: String = ""
     
-    @Shared(.appStorage("iqChannels")) var iqChannels: [IqChannel] =  [IqChannel(channel: 1, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: false),
-                                                                       IqChannel(channel: 2, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: false),
-                                                                       IqChannel(channel: 3, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: false),
-                                                                       IqChannel(channel: 4, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: false),
+    @Shared(.appStorage("iqChannels")) var iqChannels: [IqChannel] = [IqChannel(channel: 1, deviceUid: nil, isOn: false, sampleRate: SampleRate.r24.rawValue, showDetails: false),
+                                                                      IqChannel(channel: 2, deviceUid: nil, isOn: false, sampleRate: SampleRate.r24.rawValue, showDetails: false),
+                                                                      IqChannel(channel: 3, deviceUid: nil, isOn: false, sampleRate: SampleRate.r24.rawValue, showDetails: false),
+                                                                      IqChannel(channel: 4, deviceUid: nil, isOn: false, sampleRate: SampleRate.r24.rawValue, showDetails: false),
     ]
     @Shared(.appStorage("micChannels")) var micChannels: [MicChannel] = [MicChannel(channel: 0, deviceUid: nil, gain: 50, isOn: false, showDetails: false)]
     @Shared(.appStorage("rxChannels")) var rxChannels: [RxChannel] = [RxChannel(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: false),
@@ -288,7 +295,7 @@ public struct SDRDaxCore {
         return .none
 
         // ----------------------------------------------------------------------------
-        // MARK: - Subview Actions
+        // MARK: - Subview Actions (persist states to User Defaults)
         
       case let .iqStates(.element(id: channel, action: _)):
         state.iqChannels[channel - 1].deviceUid = state.iqStates[id: channel]!.deviceUid
@@ -405,19 +412,19 @@ public struct SDRDaxCore {
       
       // States
       for ch in state.iqChannels {
-        state.iqStates.append(DaxIqCore.State(channel: ch.channel, deviceUid: ch.deviceUid, isOn: ch.isOn, sampleRate: ch.sampleRate, showDetails: ch.showDetails, isConnected: state.$isConnected, isActive: state.$isActive))
+        state.iqStates.append(DaxIqCore.State(channel: ch.channel, deviceUid: ch.deviceUid, isOn: ch.isOn, sampleRate: ch.sampleRate, showDetails: ch.showDetails, isConnected: state.$isConnected))
       }
 
       for ch in state.micChannels {
-        state.micStates.append(DaxMicCore.State(channel: ch.channel, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, showDetails: ch.showDetails, isConnected: state.$isConnected, isActive: state.$isActive))
+        state.micStates.append(DaxMicCore.State(channel: ch.channel, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, showDetails: ch.showDetails, isConnected: state.$isConnected))
       }
       
       for ch in state.rxChannels {
-        state.rxStates.append(DaxRxCore.State(channel: ch.channel, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, showDetails: ch.showDetails, isConnected: state.$isConnected, isActive: state.$isActive))
+        state.rxStates.append(DaxRxCore.State(channel: ch.channel, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, showDetails: ch.showDetails, isConnected: state.$isConnected))
       }
 
       for ch in state.txChannels {
-        state.txStates.append(DaxTxCore.State(channel: ch.channel, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, showDetails: ch.showDetails, isConnected: state.$isConnected, isActive: state.$isActive))
+        state.txStates.append(DaxTxCore.State(channel: ch.channel, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, showDetails: ch.showDetails, isConnected: state.$isConnected))
       }
 
       // instantiate the Logger, use the group defaults (not the Standard)

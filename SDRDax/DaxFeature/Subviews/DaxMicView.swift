@@ -43,7 +43,7 @@ struct DaxMicView: View {
               Text("Output Device").frame(width: 100, alignment: .leading)
               Picker("", selection: $store.deviceUid) {
                 Text("none").tag(nil as String?)
-                ForEach(store.devices, id: \.uid) {
+                ForEach(store.audioDevices, id: \.uid) {
                   if $0.hasOutput { Text($0.name!).tag($0.uid as String?) }
                 }
               }
@@ -79,7 +79,7 @@ struct DaxMicView: View {
 
 #Preview {
   DaxMicView(
-    store: Store(initialState: DaxMicCore.State(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: false, isConnected: Shared(false), isActive: Shared(false))) {
+    store: Store(initialState: DaxMicCore.State(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: false, isConnected: Shared(false))) {
       DaxMicCore()
     }
   )

@@ -41,7 +41,7 @@ struct DaxRxView: View {
             }
             .help("Show / Hide Details")
 
-          Toggle(isOn: $store.isOn) { Text("Rx\(store.channel)").frame(width:30) }
+          Toggle(isOn: $store.isOn) { Text("RX\(store.channel)").frame(width:30) }
             .toggleStyle(.button)
             .disabled(store.deviceUid == nil /* || store.sliceLetter == nil */)
 
@@ -85,6 +85,9 @@ struct DaxRxView: View {
       .onDisappear {
         store.send(.onDisappear)
       }
+      .onChange(of: store.isConnected) {
+        store.send(.isConnectedChanged)
+      }
     }
   }
 }
@@ -92,7 +95,7 @@ struct DaxRxView: View {
 
 #Preview {
   DaxRxView(
-    store: Store(initialState: DaxRxCore.State(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: false, isConnected: Shared(false), isActive: Shared(false))) {
+    store: Store(initialState: DaxRxCore.State(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: false, isConnected: Shared(false))) {
       DaxRxCore()
     }
   )
