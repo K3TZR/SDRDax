@@ -12,27 +12,45 @@ struct SDRDaxSettingsView: View {
   @Bindable var store: StoreOf<SDRDaxSettingsCore>
 
   var body: some View {
-    VStack(alignment: .leading) {
-      Picker(selection: $store.smartlinkEnabled, label: Text("Connection")) {
-        Text("Local").tag(false)
-        Text("Smartlink").tag(true)
+    Grid(alignment: .leading) {
+      GridRow {
+        Text("Connection")
+        Picker("", selection: $store.smartlinkEnabled) {
+          Text("Local").tag(false)
+          Text("Smartlink").tag(true)
+        }
+        .labelsHidden()
+        .pickerStyle(.radioGroup)
+        .horizontalRadioGroupLayout()
       }
-      .pickerStyle(.radioGroup)
-      .horizontalRadioGroupLayout()
 
-      Picker(selection: $store.autoStartEnabled, label: Text("Mode")) {
-        Text("Auto").tag(true)
-        Text("Manual").tag(false)
+      GridRow {
+        Text("Mode")
+        Picker("", selection: $store.autoStartEnabled) {
+          Text("Auto").tag(true)
+          Text("Manual").tag(false)
+        }
+        .labelsHidden()
+        .pickerStyle(.radioGroup)
+        .horizontalRadioGroupLayout()
       }
-      .pickerStyle(.radioGroup)
-      .horizontalRadioGroupLayout()
 
-      VStack(alignment: .leading) {
-        Toggle("Enable TX", isOn: $store.txEnabled)
-        Toggle("Enable MIC", isOn: $store.micEnabled)
-        Toggle("Enable RX", isOn: $store.rxEnabled)
-        Toggle("Enable IQ", isOn: $store.iqEnabled)
-      }.frame(width: 300)
+      GridRow {
+        Text("Reduced Bandwidth")
+        Toggle("", isOn: $store.reducedBandwidth)
+          .labelsHidden()
+      }
+
+      Spacer()
+        GridRow {
+          Toggle("Enable TX", isOn: $store.txEnabled)
+          Toggle("Enable MIC", isOn: $store.micEnabled)
+        }
+        GridRow {
+          Toggle("Enable RX", isOn: $store.rxEnabled)
+          Toggle("Enable IQ", isOn: $store.iqEnabled)
+        }
+      Spacer()
     }
   }
 }
@@ -43,7 +61,10 @@ struct SDRDaxSettingsView: View {
                                                                          rxEnabled: Shared(true),
                                                                          txEnabled: Shared(true), 
                                                                          autoStartEnabled: Shared(false),
+                                                                         reducedBandwidth: Shared(false),
                                                                          smartlinkEnabled: Shared(true))) {
     SDRDaxSettingsCore()
   })
+  .frame(width: 300, height: 140)
+  .padding()
 }

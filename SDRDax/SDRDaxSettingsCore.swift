@@ -18,13 +18,6 @@ public struct SDRDaxSettingsCore {
   
   @ObservableState
   public struct State {
-//    public static func == (lhs: SDRDaxSettingsCore.State, rhs: SDRDaxSettingsCore.State) -> Bool {
-//      lhs.iqEnabled == rhs.iqEnabled &&
-//      lhs.micEnabled ==  rhs.micEnabled &&
-//      lhs.rxEnabled ==  rhs.rxEnabled &&
-//      lhs.txEnabled ==  rhs.txEnabled
-//    }
-        
     // persistent
     @Shared var iqEnabled: Bool
     @Shared var micEnabled: Bool
@@ -32,6 +25,7 @@ public struct SDRDaxSettingsCore {
     @Shared var txEnabled: Bool
 
     @Shared var autoStartEnabled: Bool
+    @Shared var reducedBandwidth: Bool
     @Shared var smartlinkEnabled: Bool
   }
   
@@ -47,21 +41,5 @@ public struct SDRDaxSettingsCore {
   
   public var body: some ReducerOf<Self> {
     BindingReducer()
-
-
-//    Reduce { state, action in
-//      switch action {
-//        
-//        // ----------------------------------------------------------------------------
-//        // MARK: - Root Actions
-//        
-//                
-//        // ----------------------------------------------------------------------------
-//        // MARK: - Root Binding Actions
-//        
-//      case .binding(_):
-//        return .none
-//      }
-//    }
   }
 }

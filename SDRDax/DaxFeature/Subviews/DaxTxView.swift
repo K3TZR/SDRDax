@@ -30,7 +30,7 @@ struct DaxTxView: View {
           
           Spacer()
           Text("Status").frame(width: 90)
-          Text(store.streamStatus).frame(width: 140)
+          Text(store.streamStatus.rawValue).frame(width: 140)
         }
 
         if store.showDetails{
@@ -40,7 +40,7 @@ struct DaxTxView: View {
               Text("Input Device").frame(width: 100, alignment: .leading)
               Picker("", selection: $store.deviceUid) {
                 Text("None").tag(nil as String?)
-                ForEach(store.devices, id: \.uid) {
+                ForEach(store.audioDevices, id: \.uid) {
                   if !$0.hasOutput { Text($0.name!).tag($0.uid as String?) }
                 }
               }

@@ -174,6 +174,7 @@ private struct DaxSelectionView: View {
                                                 rxEnabled: Shared(true),
                                                 txEnabled: Shared(true), 
                                                 autoStartEnabled: Shared(false),
+                                                reducedBandwidth: Shared(false),
                                                 smartlinkEnabled: Shared(true))) {
       SDRDaxCore()
     }

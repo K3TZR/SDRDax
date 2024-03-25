@@ -77,7 +77,6 @@ public struct SDRDaxCore {
   public struct State {
     let AppDefaults = UserDefaults.standard
     
-    @Shared(.appStorage("lowBandwidthDax")) var lowBandwidthDax: Bool = false
     @Shared(.appStorage("mtuValue")) var mtuValue: Int = 1_300
     @Shared(.appStorage("previousIdToken")) var previousIdToken: String? = nil
     @Shared(.appStorage("refreshToken")) var refreshToken: String? = nil
@@ -120,6 +119,7 @@ public struct SDRDaxCore {
     @Shared var txEnabled: Bool
     
     @Shared var autoStartEnabled: Bool
+    @Shared var reducedBandwidth: Bool
     @Shared var smartlinkEnabled: Bool
   }
   
@@ -295,7 +295,7 @@ public struct SDRDaxCore {
         return .none
 
         // ----------------------------------------------------------------------------
-        // MARK: - Subview Actions (persist states to User Defaults)
+        // MARK: - Subview Actions (persist to User Defaults)
         
       case let .iqStates(.element(id: channel, action: _)):
         state.iqChannels[channel - 1].deviceUid = state.iqStates[id: channel]!.deviceUid
@@ -349,7 +349,7 @@ public struct SDRDaxCore {
                                             disconnectHandle: nil,
                                             programName: "SDRDax",
                                             mtuValue: state.mtuValue,
-                                            lowBandwidthDax: state.lowBandwidthDax)
+                                            lowBandwidthDax: state.reducedBandwidth)
           await $0(.connectionStatus(.connected))
           
         } catch {
@@ -492,42 +492,3 @@ public struct SDRDaxCore {
     }
   }
 }
-
-// ----------------------------------------------------------------------------
-// MARK: - Extensions
-
-//extension UserDefaults {
-//  /// Read a user default entry and decode it into a struct
-//  /// - Parameters:
-//  ///    - key:         the name of the user default
-//  /// - Returns:        a struct (or nil)
-//  public class func getStructFromSettings<T: Decodable>(_ key: String, defaults: UserDefaults) -> T? {
-//    if let data = defaults.object(forKey: key) as? Data {
-//      let decoder = JSONDecoder()
-//      if let value = try? decoder.decode(T.self, from: data) {
-//        return value
-//      } else {
-//        return nil
-//      }
-//    }
-//    return nil
-//  }
-//  
-//  /// Encode a struct and write it to a user default
-//  /// - Parameters:
-//  ///    - key:        the name of the user default
-//  ///    - value:      a struct  to be encoded (or nil)
-//  public class func saveStructToSettings<T: Encodable>(_ key: String, _ value: T?, defaults: UserDefaults) {
-//    if value == nil {
-//      defaults.removeObject(forKey: key)
-//    } else {
-//      let encoder = JSONEncoder()
-//      if let encoded = try? encoder.encode(value) {
-//        defaults.set(encoded, forKey: key)
-//      } else {
-//        defaults.removeObject(forKey: key)
-//      }
-//    }
-//  }
-//
-//}

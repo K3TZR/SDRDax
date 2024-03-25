@@ -91,7 +91,7 @@ public struct DaxIqCore {
         // MARK: - Binding Actions
         
       case .binding(\.deviceUid):
-        print("----->>>>> DaxIqCore: Binding deviceUid = \(state.deviceUid ?? "nil")")
+//        print("----->>>>> DaxIqCore: Binding deviceUid = \(state.deviceUid ?? "nil")")
         state.audioOutput?.setDevice(getDeviceId(state))
         if state.isOn {
           // Start (CONNECTED, status OFF, DEVICE selected)
@@ -102,12 +102,12 @@ public struct DaxIqCore {
         return .none
 
       case .binding(\.sampleRate):
-        print("----->>>>> DaxIqCore: Binding gain = \(state.sampleRate)")
+//        print("----->>>>> DaxIqCore: Binding gain = \(state.sampleRate)")
         state.audioOutput?.setSampleRate(state.sampleRate)
         return .none
 
       case .binding(\.isOn):
-        print("----->>>>> DaxIqCore: Binding isOn = \(state.isOn)")
+//        print("----->>>>> DaxIqCore: Binding isOn = \(state.isOn)")
         if state.isOn {
           // Start (CONNECTED, status OFF, DEVICE selected)
           if state.isConnected && state.streamStatus == .off && state.deviceUid != nil {
@@ -122,7 +122,7 @@ public struct DaxIqCore {
         return .none
 
       case .binding(_):
-        print("----->>>>> DaxIqCore: Binding OTHER")
+//        print("----->>>>> DaxIqCore: Binding OTHER")
         return .none
       }
     }

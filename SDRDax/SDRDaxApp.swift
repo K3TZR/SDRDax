@@ -22,6 +22,7 @@ struct SDRDaxApp: App {
   
   // persistent
   @Shared(.appStorage("autoStartEnabled")) var autoStartEnabled: Bool = false
+  @Shared(.appStorage("reducedBandwidth")) var reducedBandwidth: Bool = false
   @Shared(.appStorage("smartlinkEnabled")) var smartlinkEnabled: Bool = false
   
   @Shared(.appStorage("iqEnabled")) var iqEnabled: Bool = true
@@ -39,6 +40,7 @@ struct SDRDaxApp: App {
                                                              rxEnabled: $rxEnabled,
                                                              txEnabled: $txEnabled,
                                                              autoStartEnabled: $autoStartEnabled,
+                                                             reducedBandwidth: $reducedBandwidth,
                                                              smartlinkEnabled: $smartlinkEnabled)) {
         SDRDaxCore()
       })
@@ -58,6 +60,7 @@ struct SDRDaxApp: App {
                                                                              rxEnabled: $rxEnabled,
                                                                              txEnabled: $txEnabled,
                                                                              autoStartEnabled: $autoStartEnabled,
+                                                                             reducedBandwidth: $reducedBandwidth,
                                                                              smartlinkEnabled: $smartlinkEnabled)) {
         SDRDaxSettingsCore()
       })
