@@ -24,9 +24,9 @@ public struct SDRDaxSettingsCore {
     @Shared var rxEnabled: Bool
     @Shared var txEnabled: Bool
 
-    @Shared var autoStartEnabled: Bool
-    @Shared var reducedBandwidth: Bool
-    @Shared var smartlinkEnabled: Bool
+//    @Shared var autoStartEnabled: Bool
+//    @Shared var reducedBandwidth: Bool
+//    @Shared var smartlinkEnabled: Bool
   }
   
   // ----------------------------------------------------------------------------

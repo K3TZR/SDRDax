@@ -58,10 +58,7 @@ struct SDRDaxApp: App {
       SDRDaxSettingsView(store: Store(initialState: SDRDaxSettingsCore.State(iqEnabled: $iqEnabled, 
                                                                              micEnabled: $micEnabled,
                                                                              rxEnabled: $rxEnabled,
-                                                                             txEnabled: $txEnabled,
-                                                                             autoStartEnabled: $autoStartEnabled,
-                                                                             reducedBandwidth: $reducedBandwidth,
-                                                                             smartlinkEnabled: $smartlinkEnabled)) {
+                                                                             txEnabled: $txEnabled)) {
         SDRDaxSettingsCore()
       })
       .frame(width: 300, height: 140)

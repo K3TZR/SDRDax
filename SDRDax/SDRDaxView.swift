@@ -15,9 +15,9 @@ import SharedFeature
 
 struct SDRDaxView: View {
   @Bindable var store: StoreOf<SDRDaxCore>
-      
+  
   @Environment(ListenerModel.self) var listenerModel
-    
+  
   @State var confirmationText = ""
   @State var confirmationPresented = false
   
@@ -25,7 +25,7 @@ struct SDRDaxView: View {
     let components = id.components(separatedBy: "|")
     return components[2] + " (" + components[3] + ")"
   }
-
+  
   var body: some View {
     VStack(alignment: .leading) {
       HStack(spacing: 10) {
@@ -77,7 +77,7 @@ struct SDRDaxView: View {
       DaxSelectionView(store: store)
       Spacer()
     }
-        
+    
     .onChange(of: listenerModel.stations) {
       if let selection = store.selection {
         if $1[id: selection] == nil {
@@ -90,7 +90,6 @@ struct SDRDaxView: View {
     .onAppear() {
       store.send(.onAppear)
     }
-    
     .onDisappear() {
       store.send(.onDisappear)
     }
@@ -104,13 +103,21 @@ struct SDRDaxView: View {
     
     .toolbar {
       ToolbarItemGroup {
-        HStack {
-          Text("Modes")
-          VStack(spacing: 0) {
-            Text(store.smartlinkEnabled ? "Smartlink" : "Local").frame(width: 60)
+        VStack(spacing: 0) {
+          Button(action: { store.send(.modeTapped) }) {
             Text(store.autoStartEnabled ? "Auto" : "Manual").frame(width: 60)
-          }.controlSize(.small)
+          }
+          Button(action: { store.send(.connectionTapped) }) {
+            Text(store.smartlinkEnabled ? "Smartlink" : "Local").frame(width: 60)
+          }
+          Button(action: { store.send(.bandwidthTapped) }) {
+            Text(store.reducedBandwidth ? "Reduced" : "Full")
+              .frame(width: 60)
+              .foregroundColor(store.reducedBandwidth ? .yellow : nil)
+          }
         }
+        .controlSize(.small)
+        .disabled(store.isConnected)
       }
     }
   }

@@ -128,7 +128,11 @@ public struct SDRDaxCore {
   
   public enum Action: BindableAction {
     case binding(BindingAction<State>)
+    
+    case bandwidthTapped
     case connect
+    case connectionTapped
+    case modeTapped
     case onAppear
     case onDisappear
     case setAutoSelection(String?)
@@ -199,9 +203,21 @@ public struct SDRDaxCore {
           await closeAuxiliaryWindows()
         }
         
+      case .bandwidthTapped:
+        state.reducedBandwidth.toggle()
+        return .none
+        
       case .connect:
         return connect(state)
                 
+      case .connectionTapped:
+        state.smartlinkEnabled.toggle()
+        return .none
+
+      case .modeTapped:
+        state.autoStartEnabled.toggle()
+        return .none
+
       case let .setAutoSelection(selection):
         state.autoSelection = selection
         return .none
