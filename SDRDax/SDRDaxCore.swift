@@ -17,53 +17,70 @@ import LoginFeature
 import SharedFeature
 import XCGLogFeature
 
-// DAX channel types
-public struct IqChannel: Identifiable, Equatable, Codable {
-  public let channel: Int
-  public var deviceUid: String?
-  public var isOn: Bool
-  public var sampleRate: Int
-  public var showDetails: Bool
-
-  public var id: Int { channel }
+extension URL {
+  static let channels = Self
+    .applicationSupportDirectory
+    .appending(path: "channels.json")
 }
 
-public struct MicChannel: Identifiable, Equatable, Codable {
-  public let channel: Int
-  public var deviceUid: String?
-  public var gain: Double
-  public var isOn: Bool
-  public var showDetails: Bool
-
-  public var id: Int { channel }
+extension URL {
+  static let appSettings = Self
+    .applicationSupportDirectory
+    .appending(path: "appSettings.json")
 }
 
-public struct RxChannel: Identifiable, Equatable, Codable {
-  public let channel: Int
-  public var deviceUid: String?
-  public var gain: Double
-  public var isOn: Bool
-  public var showDetails: Bool
-
-  public var id: Int { channel }
-}
-
-public struct TxChannel: Identifiable, Equatable, Codable {
-  public let channel: Int
-  public var deviceUid: String?
-  public var gain: Double
-  public var isOn: Bool
-  public var showDetails: Bool
-
-  public var id: Int { channel }
-}
-
-enum SampleRate: Int, CaseIterable {
+enum SampleRate: Int, CaseIterable, Codable {
   case r24 = 24_000
   case r48 = 48_000
   case r96 = 96_000
   case r192 = 192_000
 }
+
+enum ChannelType: String, Codable {
+  case rx
+  case tx
+  case mic
+  case iq
+}
+
+public struct AppSettings: Equatable, Codable {
+  var autoSelection: String? = nil
+  var autoStartEnabled: Bool = false
+  var iqEnabled: Bool = true
+  var micEnabled: Bool = true
+  var mtuValue: Int = 1_300
+  var previousIdToken: String? = nil
+  var reducedBandwidth: Bool = false
+  var refreshToken: String? = nil
+  var rxEnabled: Bool = true
+  var smartlinkEnabled: Bool = false
+  var smartlinkLoginRequired: Bool = false
+  var smartlinkUser: String = ""
+  var txEnabled: Bool = true
+  
+  var channels: IdentifiedArrayOf<Channel> = [Channel(id: 0, channelType: .mic, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+                                                                               Channel(id: 1, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+                                                                               Channel(id: 2, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+                                                                               Channel(id: 3, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+                                                                               Channel(id: 4, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+                                                                               Channel(id: 5, channelType: .tx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+                                                                               Channel(id: 6, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+                                                                               Channel(id: 7, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+                                                                               Channel(id: 8, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+                                                                               Channel(id: 9, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+  ]
+}
+
+public struct Channel: Identifiable, Equatable, Codable, Sendable {
+  public var id: Int
+  var channelType: ChannelType
+  var deviceUid: String?
+  var gain: Double
+  var isOn: Bool
+  var sampleRate: SampleRate
+  var showDetails: Bool
+}
+
 
 @Reducer
 public struct SDRDaxCore {
@@ -75,52 +92,53 @@ public struct SDRDaxCore {
   
   @ObservableState
   public struct State {
-    let AppDefaults = UserDefaults.standard
-    
-    @Shared(.appStorage("mtuValue")) var mtuValue: Int = 1_300
-    @Shared(.appStorage("previousIdToken")) var previousIdToken: String? = nil
-    @Shared(.appStorage("refreshToken")) var refreshToken: String? = nil
-    @Shared(.appStorage("autoSelection")) var autoSelection: String? = nil
-    @Shared(.appStorage("smartlinkLoginRequired")) var smartlinkLoginRequired: Bool = false
-    @Shared(.appStorage("smartlinkUser")) var smartlinkUser: String = ""
-    
-    @Shared(.appStorage("iqChannels")) var iqChannels: [IqChannel] = [IqChannel(channel: 1, deviceUid: nil, isOn: false, sampleRate: SampleRate.r24.rawValue, showDetails: false),
-                                                                      IqChannel(channel: 2, deviceUid: nil, isOn: false, sampleRate: SampleRate.r24.rawValue, showDetails: false),
-                                                                      IqChannel(channel: 3, deviceUid: nil, isOn: false, sampleRate: SampleRate.r24.rawValue, showDetails: false),
-                                                                      IqChannel(channel: 4, deviceUid: nil, isOn: false, sampleRate: SampleRate.r24.rawValue, showDetails: false),
-    ]
-    @Shared(.appStorage("micChannels")) var micChannels: [MicChannel] = [MicChannel(channel: 0, deviceUid: nil, gain: 50, isOn: false, showDetails: false)]
-    @Shared(.appStorage("rxChannels")) var rxChannels: [RxChannel] = [RxChannel(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: false),
-                                                                      RxChannel(channel: 2, deviceUid: nil, gain: 50, isOn: false, showDetails: false),
-                                                                      RxChannel(channel: 3, deviceUid: nil, gain: 50, isOn: false, showDetails: false),
-                                                                      RxChannel(channel: 4, deviceUid: nil, gain: 50, isOn: false, showDetails: false),
-    ]
-    @Shared(.appStorage("txChannels")) var txChannels: [TxChannel] = [TxChannel(channel: 0, deviceUid: nil, gain: 50, isOn: false, showDetails: false)]
-    
-    var iqStates: IdentifiedArrayOf<DaxIqCore.State> = []
-    var micStates: IdentifiedArrayOf<DaxMicCore.State> = []
-    var rxStates: IdentifiedArrayOf<DaxRxCore.State> = []
-    var txStates: IdentifiedArrayOf<DaxTxCore.State> = []
+    // persistent (in memory only)
+    @Shared(.inMemory("isActive")) var isActive = false
+    @Shared(.inMemory("isConnected")) var isConnected = false
 
+    // persistent (User Defaults)
+//    @Shared(.appStorage("autoSelection")) var autoSelection: String? = nil
+//    @Shared(.appStorage("autoStartEnabled")) var autoStartEnabled: Bool = false
+//    @Shared(.appStorage("iqEnabled")) var iqEnabled: Bool = true
+//    @Shared(.appStorage("micEnabled")) var micEnabled: Bool = true
+//    @Shared(.appStorage("mtuValue")) var mtuValue: Int = 1_300
+//    @Shared(.appStorage("previousIdToken")) var previousIdToken: String? = nil
+//    @Shared(.appStorage("reducedBandwidth")) var reducedBandwidth: Bool = false
+//    @Shared(.appStorage("refreshToken")) var refreshToken: String? = nil
+//    @Shared(.appStorage("rxEnabled")) var rxEnabled: Bool = true
+//    @Shared(.appStorage("smartlinkEnabled")) var smartlinkEnabled: Bool = false
+//    @Shared(.appStorage("smartlinkLoginRequired")) var smartlinkLoginRequired: Bool = false
+//    @Shared(.appStorage("smartlinkUser")) var smartlinkUser: String = ""
+//    @Shared(.appStorage("txEnabled")) var txEnabled: Bool = true
+
+    // persistent (File Storage)
+    @Shared(.fileStorage(.appSettings)) var appSettings: AppSettings = AppSettings()
+//    @Shared(.fileStorage(.channels)) var channels: IdentifiedArrayOf<Channel> = [Channel(id: 0, channelType: .mic, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+//                                                                                 Channel(id: 1, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+//                                                                                 Channel(id: 2, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+//                                                                                 Channel(id: 3, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+//                                                                                 Channel(id: 4, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+//                                                                                 Channel(id: 5, channelType: .tx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+//                                                                                 Channel(id: 6, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+//                                                                                 Channel(id: 7, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+//                                                                                 Channel(id: 8, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+//                                                                                 Channel(id: 9, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
+//    ]
+
+    
+    
     // non-persistent
     var initialized = false
     var selection: String? = nil
     var previousSelection: String? = nil
 
+    var iqStates: IdentifiedArrayOf<DaxIqCore.State> = []
+    var micStates: IdentifiedArrayOf<DaxMicCore.State> = []
+    var rxStates: IdentifiedArrayOf<DaxRxCore.State> = []
+    var txStates: IdentifiedArrayOf<DaxTxCore.State> = []
+
     @Presents var showAlert: AlertState<Action.Alert>?
     @Presents var showLogin: LoginFeature.State?
-    
-    @Shared(.inMemory("isActive")) var isActive = false
-    @Shared(.inMemory("isConnected")) var isConnected = false
-
-    @Shared var iqEnabled: Bool
-    @Shared var micEnabled: Bool
-    @Shared var rxEnabled: Bool
-    @Shared var txEnabled: Bool
-    
-    @Shared var autoStartEnabled: Bool
-    @Shared var reducedBandwidth: Bool
-    @Shared var smartlinkEnabled: Bool
   }
   
   // ----------------------------------------------------------------------------
@@ -154,7 +172,7 @@ public struct SDRDaxCore {
     case login(PresentationAction<LoginFeature.Action>)
 
     // alert sub-actions
-    public enum Alert : String {
+    public enum Alert : String, Sendable {
       case connectFailed = "Connect FAILED"
       case disconnectFailed = "Disconnect FAILED"
       case remoteRxAudioFailed = "RemoteRxAudio FAILED"
@@ -196,7 +214,7 @@ public struct SDRDaxCore {
         
       case .onAppear:
         // perform initialization
-        return .concatenate( initState(&state))
+        return initState(&state)
         
       case .onDisappear:
         return .run {_ in
@@ -204,29 +222,29 @@ public struct SDRDaxCore {
         }
         
       case .bandwidthTapped:
-        state.reducedBandwidth.toggle()
+        state.appSettings.reducedBandwidth.toggle()
         return .none
         
       case .connect:
         return connect(state)
                 
       case .connectionTapped:
-        state.smartlinkEnabled.toggle()
+        state.appSettings.smartlinkEnabled.toggle()
         return .none
 
       case .modeTapped:
-        state.autoStartEnabled.toggle()
+        state.appSettings.autoStartEnabled.toggle()
         return .none
 
       case let .setAutoSelection(selection):
-        state.autoSelection = selection
+        state.appSettings.autoSelection = selection
         return .none
                 
         // ----------------------------------------------------------------------------
         // MARK: - Root Binding Actions
         
-      case .binding(\.smartlinkEnabled):
-        if state.smartlinkEnabled {
+      case .binding(\.appSettings.smartlinkEnabled):
+        if state.appSettings.smartlinkEnabled {
           return .concatenate(localListenerStop(), smartlinkListenerStart(&state))
         } else {
           return .concatenate( smartlinkListenerStop(), localListenerStart())
@@ -261,12 +279,12 @@ public struct SDRDaxCore {
       case let .saveTokens(tokens):
         if tokens.idToken != nil {
           // success
-          state.previousIdToken = tokens.idToken
-          state.refreshToken = tokens.refreshToken
+          state.appSettings.previousIdToken = tokens.idToken
+          state.appSettings.refreshToken = tokens.refreshToken
         } else {
           // failure
-          state.previousIdToken = nil
-          state.refreshToken = nil
+          state.appSettings.previousIdToken = nil
+          state.appSettings.refreshToken = nil
         }
         return .none
         
@@ -280,14 +298,14 @@ public struct SDRDaxCore {
           //        case .remoteRxAudioFailed:
           //          state.remoteRxAudioEnabled = false
         case .smartlinkLoginFailed:
-          state.smartlinkEnabled = false
+          state.appSettings.smartlinkEnabled = false
         default: break
         }
         state.showAlert = AlertState(title: TextState(alertType.rawValue), message: TextState(message))
         return .none
         
       case .showLoginSheet:
-        state.showLogin = LoginFeature.State(user: state.smartlinkUser)
+        state.showLogin = LoginFeature.State(user: state.appSettings.smartlinkUser)
         return .none
         
         // ----------------------------------------------------------------------------
@@ -300,7 +318,7 @@ public struct SDRDaxCore {
         // MARK: - Login Actions
         
       case .login(.presented(.cancelButtonTapped)):
-        state.smartlinkEnabled = false
+        state.appSettings.smartlinkEnabled = false
         return .none
         
       case let .login(.presented(.loginButtonTapped(user, password))):
@@ -313,32 +331,32 @@ public struct SDRDaxCore {
         // ----------------------------------------------------------------------------
         // MARK: - Subview Actions (persist to User Defaults)
         
-      case let .iqStates(.element(id: channel, action: _)):
-        state.iqChannels[channel - 1].deviceUid = state.iqStates[id: channel]!.deviceUid
-        state.iqChannels[channel - 1].sampleRate = state.iqStates[id: channel]!.sampleRate
-        state.iqChannels[channel - 1].isOn = state.iqStates[id: channel]!.isOn
-        state.iqChannels[channel - 1].showDetails = state.iqStates[id: channel]!.showDetails
+      case let .iqStates(.element(id: id, action: _)):
+        state.appSettings.channels[id: id]!.deviceUid = state.iqStates[id: id]!.deviceUid
+        state.appSettings.channels[id: id]!.sampleRate = state.iqStates[id: id]!.sampleRate
+        state.appSettings.channels[id: id]!.isOn = state.iqStates[id: id]!.isOn
+        state.appSettings.channels[id: id]!.showDetails = state.iqStates[id: id]!.showDetails
         return .none
 
-      case let .micStates(.element(id: channel, action: _)):
-        state.micChannels[channel].deviceUid = state.micStates[id: channel]!.deviceUid
-        state.micChannels[channel].gain = state.micStates[id: channel]!.gain
-        state.micChannels[channel].isOn = state.micStates[id: channel]!.isOn
-        state.micChannels[channel].showDetails = state.micStates[id: channel]!.showDetails
+      case let .micStates(.element(id: id, action: _)):
+        state.appSettings.channels[id: id]!.deviceUid = state.micStates[id: id]!.deviceUid
+        state.appSettings.channels[id: id]!.gain = state.micStates[id: id]!.gain
+        state.appSettings.channels[id: id]!.isOn = state.micStates[id: id]!.isOn
+        state.appSettings.channels[id: id]!.showDetails = state.micStates[id: id]!.showDetails
         return .none
 
-      case let .rxStates(.element(id: channel, action: _)):
-        state.rxChannels[channel - 1].deviceUid = state.rxStates[id: channel]!.deviceUid
-        state.rxChannels[channel - 1].gain = state.rxStates[id: channel]!.gain
-        state.rxChannels[channel - 1].isOn = state.rxStates[id: channel]!.isOn
-        state.rxChannels[channel - 1].showDetails = state.rxStates[id: channel]!.showDetails
+      case let .rxStates(.element(id: id, action: _)):
+        state.appSettings.channels[id: id]!.deviceUid = state.rxStates[id: id]!.deviceUid
+        state.appSettings.channels[id: id]!.gain = state.rxStates[id: id]!.gain
+        state.appSettings.channels[id: id]!.isOn = state.rxStates[id: id]!.isOn
+        state.appSettings.channels[id: id]!.showDetails = state.rxStates[id: id]!.showDetails
         return .none
 
-      case let .txStates(.element(id: channel, action: _)):
-        state.txChannels[channel].deviceUid = state.txStates[id: channel]!.deviceUid
-        state.txChannels[channel].gain = state.txStates[id: channel]!.gain
-        state.txChannels[channel].isOn = state.txStates[id: channel]!.isOn
-        state.txChannels[channel].showDetails = state.txStates[id: channel]!.showDetails
+      case let .txStates(.element(id: id, action: _)):
+        state.appSettings.channels[id: id]!.deviceUid = state.txStates[id: id]!.deviceUid
+        state.appSettings.channels[id: id]!.gain = state.txStates[id: id]!.gain
+        state.appSettings.channels[id: id]!.isOn = state.txStates[id: id]!.isOn
+        state.appSettings.channels[id: id]!.showDetails = state.txStates[id: id]!.showDetails
         return .none
       }
     }
@@ -364,8 +382,8 @@ public struct SDRDaxCore {
                                             isGui: false,
                                             disconnectHandle: nil,
                                             programName: "SDRDax",
-                                            mtuValue: state.mtuValue,
-                                            lowBandwidthDax: state.reducedBandwidth)
+                                            mtuValue: state.appSettings.mtuValue,
+                                            lowBandwidthDax: state.appSettings.reducedBandwidth)
           await $0(.connectionStatus(.connected))
           
         } catch {
@@ -427,20 +445,20 @@ public struct SDRDaxCore {
     if state.initialized == false {
       
       // States
-      for ch in state.iqChannels {
-        state.iqStates.append(DaxIqCore.State(channel: ch.channel, deviceUid: ch.deviceUid, isOn: ch.isOn, sampleRate: ch.sampleRate, showDetails: ch.showDetails, isConnected: state.$isConnected))
+      for ch in state.appSettings.channels where ch.channelType == .iq {
+        state.iqStates.append(DaxIqCore.State(id: ch.id, deviceUid: ch.deviceUid, isOn: ch.isOn, sampleRate: ch.sampleRate, showDetails: ch.showDetails, isConnected: state.$isConnected))
       }
 
-      for ch in state.micChannels {
-        state.micStates.append(DaxMicCore.State(channel: ch.channel, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, showDetails: ch.showDetails, isConnected: state.$isConnected))
+      for ch in state.appSettings.channels where ch.channelType == .mic {
+        state.micStates.append(DaxMicCore.State(id: ch.id, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, sampleRate: ch.sampleRate, showDetails: ch.showDetails, isConnected: state.$isConnected))
       }
       
-      for ch in state.rxChannels {
-        state.rxStates.append(DaxRxCore.State(channel: ch.channel, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, showDetails: ch.showDetails, isConnected: state.$isConnected))
+      for ch in state.appSettings.channels where ch.channelType == .rx {
+        state.rxStates.append(DaxRxCore.State(id: ch.id, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, sampleRate: ch.sampleRate, showDetails: ch.showDetails, isConnected: state.$isConnected))
       }
 
-      for ch in state.txChannels {
-        state.txStates.append(DaxTxCore.State(channel: ch.channel, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, showDetails: ch.showDetails, isConnected: state.$isConnected))
+      for ch in state.appSettings.channels where ch.channelType == .tx {
+        state.txStates.append(DaxTxCore.State(id: ch.id, deviceUid: ch.deviceUid, gain: ch.gain, isOn: ch.isOn, sampleRate: ch.sampleRate, showDetails: ch.showDetails, isConnected: state.$isConnected))
       }
 
       // instantiate the Logger, use the group defaults (not the Standard)
@@ -449,10 +467,10 @@ public struct SDRDaxCore {
       // mark as initialized
       state.initialized = true
       
-      if state.smartlinkEnabled {
+      if state.appSettings.smartlinkEnabled {
         return smartlinkListenerStart(&state)
       } else {
-        _ = localListenerStart()
+        return localListenerStart()
       }
     }
     return .none
@@ -475,10 +493,10 @@ public struct SDRDaxCore {
   // MARK: - Smartlink Listener effect methods
 
   private func smartlinkListenerStart(_ state: inout State) -> Effect<SDRDaxCore.Action> {
-    if state.smartlinkLoginRequired || state.smartlinkUser.isEmpty {
+    if state.appSettings.smartlinkLoginRequired || state.appSettings.smartlinkUser.isEmpty {
       // YES but login required or no user
-      state.previousIdToken = nil
-      state.refreshToken = nil
+      state.appSettings.previousIdToken = nil
+      state.appSettings.refreshToken = nil
       return .run {
         await $0(.showLoginSheet)
       }
@@ -486,10 +504,10 @@ public struct SDRDaxCore {
     } else {
       // YES, try
       return .run { [state] in
-        let tokens = await ListenerModel.shared.smartlinkMode(state.smartlinkUser,
-                                                              state.smartlinkLoginRequired,
-                                                              state.previousIdToken,
-                                                              state.refreshToken)
+        let tokens = await ListenerModel.shared.smartlinkMode(state.appSettings.smartlinkUser,
+                                                              state.appSettings.smartlinkLoginRequired,
+                                                              state.appSettings.previousIdToken,
+                                                              state.appSettings.refreshToken)
         await $0(.saveTokens(tokens))
       }
     }
@@ -501,7 +519,7 @@ public struct SDRDaxCore {
   }
     
   private func smartlinkUserLogin(_ state: inout State, _ user: String, _ password: String) -> Effect<SDRDaxCore.Action> {
-    state.smartlinkUser = user
+    state.appSettings.smartlinkUser = user
     return .run {
       let tokens = await ListenerModel.shared.smartlinkStart(user, password)
       await $0(.saveTokens(tokens))

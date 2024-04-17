@@ -29,15 +29,15 @@ struct SDRDaxView: View {
   var body: some View {
     VStack(alignment: .leading) {
       HStack(spacing: 10) {
-        if store.autoStartEnabled && store.autoSelection != nil {
+        if store.appSettings.autoStartEnabled && store.appSettings.autoSelection != nil {
           // use the default Station
           Text("Station")
-          if store.autoSelection == nil {
+          if store.appSettings.autoSelection == nil {
             Text("NO Default Station").frame(width: 215)
           } else {
-            Text(nameString(store.autoSelection!)).frame(width: 215)
+            Text(nameString(store.appSettings.autoSelection!)).frame(width: 215)
               .onAppear{
-                store.selection = store.autoSelection
+                store.selection = store.appSettings.autoSelection
               }
             Spacer()
             Image(systemName: "minus.circle").disabled(store.selection == nil)
@@ -105,15 +105,15 @@ struct SDRDaxView: View {
       ToolbarItemGroup {
         VStack(spacing: 0) {
           Button(action: { store.send(.modeTapped) }) {
-            Text(store.autoStartEnabled ? "Auto" : "Manual").frame(width: 60)
+            Text(store.appSettings.autoStartEnabled ? "Auto" : "Manual").frame(width: 60)
           }
           Button(action: { store.send(.connectionTapped) }) {
-            Text(store.smartlinkEnabled ? "Smartlink" : "Local").frame(width: 60)
+            Text(store.appSettings.smartlinkEnabled ? "Smartlink" : "Local").frame(width: 60)
           }
           Button(action: { store.send(.bandwidthTapped) }) {
-            Text(store.reducedBandwidth ? "Reduced" : "Full")
+            Text(store.appSettings.reducedBandwidth ? "Reduced" : "Full")
               .frame(width: 60)
-              .foregroundColor(store.reducedBandwidth ? .yellow : nil)
+              .foregroundColor(store.appSettings.reducedBandwidth ? .yellow : nil)
           }
         }
         .controlSize(.small)
@@ -130,26 +130,26 @@ private struct DaxSelectionView: View {
     
     VStack(alignment: .center) {
       
-      if store.autoStartEnabled && store.autoSelection != nil && !store.isConnected {
+      if store.appSettings.autoStartEnabled && store.appSettings.autoSelection != nil && !store.isConnected {
         SpinnerView()
       } else {
         
         // scrollview to display selected DAX panels
         ScrollView {
           VStack(spacing: 5) {
-            if store.txEnabled {
+            if store.appSettings.txEnabled {
               ForEach(store.scope(state: \.txStates, action: \.txStates)) { store in
                 DaxTxView(store: store)
               }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
-            if store.micEnabled {
+            if store.appSettings.micEnabled {
               ForEach(store.scope(state: \.micStates, action: \.micStates)) { store in
                 DaxMicView(store: store)
               }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
-            if store.rxEnabled {
+            if store.appSettings.rxEnabled {
               ForEach(store.scope(state: \.rxStates, action: \.rxStates)) { store in
                 VStack(spacing: 5) {
                   DaxRxView(store: store)
@@ -158,7 +158,7 @@ private struct DaxSelectionView: View {
               }
               Divider().frame(height: 3).background(Color(.controlTextColor))
             }
-            if store.iqEnabled {
+            if store.appSettings.iqEnabled {
               ForEach(store.scope(state: \.iqStates, action: \.iqStates)) { store in
                 VStack(spacing: 5) {
                   DaxIqView(store: store)
@@ -176,13 +176,7 @@ private struct DaxSelectionView: View {
 
 #Preview {
   SDRDaxView(
-    store: Store(initialState: SDRDaxCore.State(iqEnabled: Shared(true),
-                                                micEnabled: Shared(true),
-                                                rxEnabled: Shared(true),
-                                                txEnabled: Shared(true), 
-                                                autoStartEnabled: Shared(false),
-                                                reducedBandwidth: Shared(false),
-                                                smartlinkEnabled: Shared(true))) {
+    store: Store(initialState: SDRDaxCore.State()) {
       SDRDaxCore()
     }
   )

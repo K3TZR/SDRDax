@@ -19,14 +19,11 @@ public struct SDRDaxSettingsCore {
   @ObservableState
   public struct State {
     // persistent
-    @Shared var iqEnabled: Bool
-    @Shared var micEnabled: Bool
-    @Shared var rxEnabled: Bool
-    @Shared var txEnabled: Bool
-
-//    @Shared var autoStartEnabled: Bool
-//    @Shared var reducedBandwidth: Bool
-//    @Shared var smartlinkEnabled: Bool
+    @Shared(.fileStorage(.appSettings)) var appSettings: AppSettings = AppSettings()
+//    @Shared(.appStorage("iqEnabled")) var iqEnabled: Bool = true
+//    @Shared(.appStorage("micEnabled")) var micEnabled: Bool = true
+//    @Shared(.appStorage("rxEnabled")) var rxEnabled: Bool = true
+//    @Shared(.appStorage("txEnabled")) var txEnabled: Bool = true
   }
   
   // ----------------------------------------------------------------------------

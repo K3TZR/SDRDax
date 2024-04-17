@@ -10,7 +10,7 @@ import SwiftUI
 
 import FlexApiFeature
 import ListenerFeature
-import SharedFeature      // FIXME: replace with LogFeatures package
+import XCGLogFeature 
 
 // ----------------------------------------------------------------------------
 // MARK: - Main
@@ -20,28 +20,12 @@ struct SDRDaxApp: App {
   @NSApplicationDelegateAdaptor(AppDelegate.self)
   var appDelegate
   
-  // persistent
-  @Shared(.appStorage("autoStartEnabled")) var autoStartEnabled: Bool = false
-  @Shared(.appStorage("reducedBandwidth")) var reducedBandwidth: Bool = false
-  @Shared(.appStorage("smartlinkEnabled")) var smartlinkEnabled: Bool = false
-  
-  @Shared(.appStorage("iqEnabled")) var iqEnabled: Bool = true
-  @Shared(.appStorage("micEnabled")) var micEnabled: Bool = true
-  @Shared(.appStorage("rxEnabled")) var rxEnabled: Bool = true
-  @Shared(.appStorage("txEnabled")) var txEnabled: Bool = true
-  
   @State var apiModel = ApiModel.shared
   @State var listenerModel = ListenerModel.shared
   
   var body: some Scene {
     WindowGroup("SDRDax  (v" + Version().string + ")") {
-      SDRDaxView(store: Store(initialState: SDRDaxCore.State(iqEnabled: $iqEnabled, 
-                                                             micEnabled: $micEnabled,
-                                                             rxEnabled: $rxEnabled,
-                                                             txEnabled: $txEnabled,
-                                                             autoStartEnabled: $autoStartEnabled,
-                                                             reducedBandwidth: $reducedBandwidth,
-                                                             smartlinkEnabled: $smartlinkEnabled)) {
+      SDRDaxView(store: Store(initialState: SDRDaxCore.State()) {
         SDRDaxCore()
       })
       .frame(minWidth: 370, maxWidth: 370)
@@ -55,10 +39,7 @@ struct SDRDaxApp: App {
     
     // Settings window
     Settings {
-      SDRDaxSettingsView(store: Store(initialState: SDRDaxSettingsCore.State(iqEnabled: $iqEnabled, 
-                                                                             micEnabled: $micEnabled,
-                                                                             rxEnabled: $rxEnabled,
-                                                                             txEnabled: $txEnabled)) {
+      SDRDaxSettingsView(store: Store(initialState: SDRDaxSettingsCore.State()) {
         SDRDaxSettingsCore()
       })
       .frame(width: 300, height: 140)

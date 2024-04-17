@@ -12,6 +12,7 @@ import Foundation
 import FlexApiFeature
 import DaxAudioFeature
 import SharedFeature
+import XCGLogFeature
 
 @Reducer
 public struct DaxRxCore {
@@ -23,19 +24,18 @@ public struct DaxRxCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    let channel: Int
+    public let id: Int
     var deviceUid: String?
     var gain: Double
     var isOn: Bool
+    var sampleRate: SampleRate
     var showDetails: Bool
     
     @Shared var isConnected: Bool
 
     let audioDevices = AudioDevice.getDevices()
-    var audioOutput: DaxAudioPlayer?
+    var audioOutput: DaxAudioOutput?
     var streamStatus: StreamStatus = .off
-    
-    public var id: Int { channel }
   }
   
   // ----------------------------------------------------------------------------
@@ -131,12 +131,12 @@ public struct DaxRxCore {
   // MARK: - DAX effect methods
   
   private func daxStart(_ state: inout State) -> Effect<DaxRxCore.Action> {
-    state.audioOutput = DaxAudioPlayer(deviceId: getDeviceId(state), gain: state.gain)
+    state.audioOutput = DaxAudioOutput(deviceId: getDeviceId(state), gain: state.gain)
     state.streamStatus = .streaming
     return .run { [state] send in
       // request a stream, reply to handler
-      await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.channel, replyTo: state.audioOutput!.streamReplyHandler)
-      log("DaxRxCore: stream REQUESTED, channel = \(state.channel)", .debug, #function, #file, #line)
+      await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.id, replyTo: state.audioOutput!.streamReplyHandler)
+      log("DaxRxCore: stream REQUESTED, channel = \(state.id)", .debug, #function, #file, #line)
     }
   }
 
@@ -145,7 +145,7 @@ public struct DaxRxCore {
     state.streamStatus = .off
     state.audioOutput?.stop()
     state.audioOutput = nil
-    log("DaxRxCore: stream STOPPED, channel = \(state.channel)", .debug, #function, #file, #line)
+    log("DaxRxCore: stream STOPPED, channel = \(state.id)", .debug, #function, #file, #line)
     if let streamId {
       return .run { [streamId] _ in
         // remove stream(s)

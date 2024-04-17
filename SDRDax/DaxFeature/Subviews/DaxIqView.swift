@@ -25,7 +25,7 @@ struct DaxIqView: View {
               store.showDetails.toggle()
             }
             .help("Show / Hide Details")
-          Toggle(isOn: $store.isOn) { Text("IQ\(store.channel)").frame(width: 30) }
+          Toggle(isOn: $store.isOn) { Text("IQ\(store.id - 5)").frame(width: 30) }
             .toggleStyle(.button)
             .disabled(store.deviceUid == nil)
           
@@ -82,7 +82,7 @@ struct DaxIqView: View {
 
 #Preview {
   DaxIqView(
-    store: Store(initialState: DaxIqCore.State(channel: 1, deviceUid: nil, isOn: false, sampleRate: 24_000, showDetails: false, isConnected: Shared(false))) {
+    store: Store(initialState: DaxIqCore.State(id: 6, deviceUid: nil, isOn: false, sampleRate: .r24, showDetails: false, isConnected: Shared(false))) {
       DaxIqCore()
     }
   )

@@ -12,6 +12,7 @@ import Foundation
 import FlexApiFeature
 import DaxAudioFeature
 import SharedFeature
+import XCGLogFeature
 
 @Reducer
 public struct DaxIqCore {
@@ -23,20 +24,19 @@ public struct DaxIqCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    let channel: Int
+    public let id: Int
     var deviceUid: String?
+//    var gain: Double
     var isOn: Bool
-    var sampleRate: Int
+    var sampleRate: SampleRate
     var showDetails: Bool
     
     @Shared var isConnected: Bool
 
     let audioDevices = AudioDevice.getDevices()
-    var audioOutput: DaxAudioPlayer?
+    var audioOutput: DaxAudioOutput?
     var frequency: Double?
     var streamStatus: StreamStatus = .off
-
-    public var id: Int { channel }
   }
   
   // ----------------------------------------------------------------------------
@@ -103,7 +103,7 @@ public struct DaxIqCore {
 
       case .binding(\.sampleRate):
 //        print("----->>>>> DaxIqCore: Binding gain = \(state.sampleRate)")
-        state.audioOutput?.setSampleRate(state.sampleRate)
+        state.audioOutput?.setSampleRate(state.sampleRate.rawValue)
         return .none
 
       case .binding(\.isOn):
@@ -133,12 +133,12 @@ public struct DaxIqCore {
   // MARK: - DAX effect methods
   
   private func daxStart(_ state: inout State) -> Effect<DaxIqCore.Action> {
-    state.audioOutput = DaxAudioPlayer(deviceId: getDeviceId(state), gain: 100, sampleRate: state.sampleRate)
+    state.audioOutput = DaxAudioOutput(deviceId: getDeviceId(state), gain: 100, sampleRate: state.sampleRate.rawValue)
     state.streamStatus = .streaming
     return .run { [state] send in
       // request a stream, reply to handler
-      await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.channel, replyTo: state.audioOutput!.streamReplyHandler)
-      log("DaxIqCore: stream REQUESTED, channel = \(state.channel)", .debug, #function, #file, #line)
+      await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.id - 5, replyTo: state.audioOutput!.streamReplyHandler)
+      log("DaxIqCore: stream REQUESTED, channel = \(state.id - 5)", .debug, #function, #file, #line)
     }
   }
 
@@ -147,7 +147,7 @@ public struct DaxIqCore {
     state.streamStatus = .off
     state.audioOutput?.stop()
     state.audioOutput = nil
-    log("DaxIqCore: stream STOPPED, channel = \(state.channel)", .debug, #function, #file, #line)
+    log("DaxIqCore: stream STOPPED, channel = \(state.id - 5)", .debug, #function, #file, #line)
     if let streamId {
       return .run { [streamId] _ in
         // remove stream(s)

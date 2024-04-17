@@ -12,6 +12,7 @@ import Foundation
 import FlexApiFeature
 import DaxAudioFeature
 import SharedFeature
+import XCGLogFeature
 
 @Reducer
 public struct DaxMicCore {
@@ -23,19 +24,18 @@ public struct DaxMicCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    let channel: Int
+    public let id: Int
     var deviceUid: String?
     var gain: Double
     var isOn: Bool
+    var sampleRate: SampleRate
     var showDetails: Bool
 
     @Shared var isConnected: Bool
 
     let audioDevices = AudioDevice.getDevices()
-    var audioOutput: DaxAudioPlayer?
+    var audioOutput: DaxAudioOutput?
     var streamStatus: StreamStatus = .off
-
-    public var id: Int { channel }
   }
   
   // ----------------------------------------------------------------------------
@@ -131,7 +131,7 @@ public struct DaxMicCore {
   // MARK: - DAX effect methods
   
   private func daxStart(_ state: inout State) -> Effect<DaxMicCore.Action> {
-    state.audioOutput = DaxAudioPlayer(deviceId: getDeviceId(state), gain: state.gain)
+    state.audioOutput = DaxAudioOutput(deviceId: getDeviceId(state), gain: state.gain)
     state.streamStatus = .streaming
     return .run { [state] send in
       // request a stream, reply to handler

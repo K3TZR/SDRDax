@@ -20,7 +20,7 @@ struct DaxRxView: View {
   @Environment(ApiModel.self) var apiModel
 
   @MainActor private var activeSlice: String {
-    for slice in apiModel.slices where slice.daxChannel == store.channel {
+    for slice in apiModel.slices where slice.daxChannel == store.id {
       return SliceStatus.sliceFound.rawValue + (slice.sliceLetter ?? "")
     }
     if store.isOn && store.isConnected {
@@ -41,7 +41,7 @@ struct DaxRxView: View {
             }
             .help("Show / Hide Details")
 
-          Toggle(isOn: $store.isOn) { Text("RX\(store.channel)").frame(width:30) }
+          Toggle(isOn: $store.isOn) { Text("RX\(store.id)").frame(width:30) }
             .toggleStyle(.button)
             .disabled(store.deviceUid == nil /* || store.sliceLetter == nil */)
 
@@ -95,7 +95,7 @@ struct DaxRxView: View {
 
 #Preview {
   DaxRxView(
-    store: Store(initialState: DaxRxCore.State(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: false, isConnected: Shared(false))) {
+    store: Store(initialState: DaxRxCore.State(id: 1, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false, isConnected: Shared(false))) {
       DaxRxCore()
     }
   )

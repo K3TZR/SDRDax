@@ -64,7 +64,7 @@ struct DaxTxView: View {
 
 #Preview {
   DaxTxView(
-    store: Store(initialState: DaxTxCore.State(channel: 0, deviceUid: nil, gain: 50, isOn: false, showDetails: false, isConnected: Shared(false))) {
+    store: Store(initialState: DaxTxCore.State(id: 5, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false, isConnected: Shared(false))) {
       DaxTxCore()
     }
   )

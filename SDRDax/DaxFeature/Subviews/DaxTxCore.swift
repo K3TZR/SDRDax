@@ -23,19 +23,18 @@ public struct DaxTxCore {
   
   @ObservableState
   public struct State: Equatable, Identifiable {
-    let channel: Int
+    public let id: Int
     var deviceUid: String?
     var gain: Double
     var isOn: Bool
+    var sampleRate: SampleRate
     var showDetails: Bool
 
     @Shared var isConnected: Bool
 
     let audioDevices = AudioDevice.getDevices()
-    var audioOutput: DaxAudioPlayer?
+    var audioInput: DaxAudioInput?
     var streamStatus: StreamStatus = .off
-
-    public var id: Int { channel }
   }
   
   // ----------------------------------------------------------------------------
@@ -90,8 +89,8 @@ public struct DaxTxCore {
         // MARK: - Binding Actions
         
       case .binding(\.deviceUid):
-//        print("----->>>>> DaxTxCore: Binding deviceUid = \(state.deviceUid ?? "nil")")
-        state.audioOutput?.setDevice(getDeviceId(state))
+        print("----->>>>> DaxTxCore: Binding deviceUid = \(state.deviceUid ?? "nil")")
+        state.audioInput?.setDevice(getDeviceId(state))
         if state.isOn {
           // Start (CONNECTED, status OFF, DEVICE selected)
           if state.isConnected && state.streamStatus == .off && state.deviceUid != nil {
@@ -101,12 +100,12 @@ public struct DaxTxCore {
         return .none
 
       case .binding(\.gain):
-//        print("----->>>>> DaxTxCore: Binding gain = \(state.gain)")
-        state.audioOutput?.setGain(state.gain)
+        print("----->>>>> DaxTxCore: Binding gain = \(state.gain)")
+        state.audioInput?.setGain(state.gain)
         return .none
 
       case .binding(\.isOn):
-//        print("----->>>>> DaxTxCore: Binding isOn = \(state.isOn)")
+        print("----->>>>> DaxTxCore: Binding isOn = \(state.isOn)")
         if state.isOn {
           // Start (CONNECTED, status OFF, DEVICE selected)
           if state.isConnected && state.streamStatus == .off && state.deviceUid != nil {
@@ -121,7 +120,7 @@ public struct DaxTxCore {
         return .none
 
       case .binding(_):
-//        print("----->>>>> DaxTxCore: Binding OTHER")
+        print("----->>>>> DaxTxCore: Binding OTHER")
         return .none
       }
     }
@@ -133,14 +132,18 @@ public struct DaxTxCore {
   
   private func daxStart(_ state: inout State) -> Effect<DaxTxCore.Action> {
 
+    state.audioInput = DaxAudioInput(deviceId: getDeviceId(state), gain: state.gain)
     // FIXME:
-    
+    print("----->>>>> daxStart")
+    state.audioInput?.start()
     return .none
   }
   
   private func daxStop(_ state: inout State) -> Effect<DaxTxCore.Action> {
 
+    state.audioInput = nil
     // FIXME:
+    print("----->>>>> daxStop")
 
     return .none
   }

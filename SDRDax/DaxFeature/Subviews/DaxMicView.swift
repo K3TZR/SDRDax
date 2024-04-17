@@ -79,7 +79,7 @@ struct DaxMicView: View {
 
 #Preview {
   DaxMicView(
-    store: Store(initialState: DaxMicCore.State(channel: 1, deviceUid: nil, gain: 50, isOn: false, showDetails: false, isConnected: Shared(false))) {
+    store: Store(initialState: DaxMicCore.State(id: 0, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false, isConnected: Shared(false))) {
       DaxMicCore()
     }
   )
