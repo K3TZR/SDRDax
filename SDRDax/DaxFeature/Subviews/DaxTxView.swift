@@ -52,8 +52,7 @@ struct DaxTxView: View {
                 Text("Gain")
                 Text("\(Int(store.gain))").frame(width: 40, alignment: .trailing)
               }
-              Slider(value: $store.gain, in: 0...100, label: {
-              })
+              Slider(value: $store.gain, in: 0...100, step: 1) 
             }
           }
         }

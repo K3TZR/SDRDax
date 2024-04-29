@@ -17,6 +17,9 @@ import LoginFeature
 import SharedFeature
 import XCGLogFeature
 
+// ----------------------------------------------------------------------------
+// MARK: - Definitions
+
 extension URL {
   static let channels = Self
     .applicationSupportDirectory
@@ -43,7 +46,7 @@ enum ChannelType: String, Codable {
   case iq
 }
 
-public struct AppSettings: Equatable, Codable {
+struct AppSettings: Equatable, Codable {
   var autoSelection: String? = nil
   var autoStartEnabled: Bool = false
   var iqEnabled: Bool = true
@@ -71,7 +74,7 @@ public struct AppSettings: Equatable, Codable {
   ]
 }
 
-public struct Channel: Identifiable, Equatable, Codable, Sendable {
+struct Channel: Identifiable, Equatable, Codable, Sendable {
   public var id: Int
   var channelType: ChannelType
   var deviceUid: String?
@@ -96,36 +99,8 @@ public struct SDRDaxCore {
     @Shared(.inMemory("isActive")) var isActive = false
     @Shared(.inMemory("isConnected")) var isConnected = false
 
-    // persistent (User Defaults)
-//    @Shared(.appStorage("autoSelection")) var autoSelection: String? = nil
-//    @Shared(.appStorage("autoStartEnabled")) var autoStartEnabled: Bool = false
-//    @Shared(.appStorage("iqEnabled")) var iqEnabled: Bool = true
-//    @Shared(.appStorage("micEnabled")) var micEnabled: Bool = true
-//    @Shared(.appStorage("mtuValue")) var mtuValue: Int = 1_300
-//    @Shared(.appStorage("previousIdToken")) var previousIdToken: String? = nil
-//    @Shared(.appStorage("reducedBandwidth")) var reducedBandwidth: Bool = false
-//    @Shared(.appStorage("refreshToken")) var refreshToken: String? = nil
-//    @Shared(.appStorage("rxEnabled")) var rxEnabled: Bool = true
-//    @Shared(.appStorage("smartlinkEnabled")) var smartlinkEnabled: Bool = false
-//    @Shared(.appStorage("smartlinkLoginRequired")) var smartlinkLoginRequired: Bool = false
-//    @Shared(.appStorage("smartlinkUser")) var smartlinkUser: String = ""
-//    @Shared(.appStorage("txEnabled")) var txEnabled: Bool = true
-
     // persistent (File Storage)
     @Shared(.fileStorage(.appSettings)) var appSettings: AppSettings = AppSettings()
-//    @Shared(.fileStorage(.channels)) var channels: IdentifiedArrayOf<Channel> = [Channel(id: 0, channelType: .mic, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
-//                                                                                 Channel(id: 1, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
-//                                                                                 Channel(id: 2, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
-//                                                                                 Channel(id: 3, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
-//                                                                                 Channel(id: 4, channelType: .rx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
-//                                                                                 Channel(id: 5, channelType: .tx, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
-//                                                                                 Channel(id: 6, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
-//                                                                                 Channel(id: 7, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
-//                                                                                 Channel(id: 8, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
-//                                                                                 Channel(id: 9, channelType: .iq, deviceUid: nil, gain: 50, isOn: false, sampleRate: .r24, showDetails: false),
-//    ]
-
-    
     
     // non-persistent
     var initialized = false
@@ -329,7 +304,7 @@ public struct SDRDaxCore {
         return .none
 
         // ----------------------------------------------------------------------------
-        // MARK: - Subview Actions (persist to User Defaults)
+        // MARK: - Subview Actions
         
       case let .iqStates(.element(id: id, action: _)):
         state.appSettings.channels[id: id]!.deviceUid = state.iqStates[id: id]!.deviceUid
@@ -397,7 +372,7 @@ public struct SDRDaxCore {
   
   private func disconnect() -> Effect<SDRDaxCore.Action> {
     return .run {
-      await ApiModel.shared.disconnect()
+      ApiModel.shared.disconnect()
       await $0(.connectionStatus(.disconnected))
     }
   }

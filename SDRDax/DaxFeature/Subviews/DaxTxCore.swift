@@ -11,6 +11,7 @@ import Foundation
 
 import FlexApiFeature
 import DaxAudioFeature
+import XCGLogFeature
 import SharedFeature
 
 @Reducer
@@ -131,23 +132,27 @@ public struct DaxTxCore {
   // MARK: - DAX effect methods
   
   private func daxStart(_ state: inout State) -> Effect<DaxTxCore.Action> {
-
     state.audioInput = DaxAudioInput(deviceId: getDeviceId(state), gain: state.gain)
-    // FIXME:
-    print("----->>>>> daxStart")
-    state.audioInput?.start()
+    state.streamStatus = .streaming
+    // request a stream, reply to handler
+    ApiModel.shared.requestStream(StreamType.daxTxAudioStream, replyTo: state.audioInput!.streamReplyHandler)
+    log("DaxTxCore: stream REQUESTED", .debug, #function, #file, #line)
     return .none
   }
   
   private func daxStop(_ state: inout State) -> Effect<DaxTxCore.Action> {
-
+    let streamId = state.audioInput?.streamId
+    state.streamStatus = .off
+    state.audioInput?.stop()
     state.audioInput = nil
-    // FIXME:
-    print("----->>>>> daxStop")
-
+    log("DaxTxCore: stream STOPPED", .debug, #function, #file, #line)
+    if let streamId {
+      // remove stream(s)
+      ApiModel.shared.removeStream(streamId)
+    }
     return .none
   }
-  
+
   private func getDeviceId(_ state: State) -> AudioDeviceID {
     for device in state.audioDevices where device.uid == state.deviceUid {
       return device.id

@@ -91,7 +91,7 @@ public struct DaxMicCore {
                 
       case .binding(\.deviceUid):
 //        print("----->>>>> DaxMicCore: Binding deviceUid = \(state.deviceUid ?? "nil")")
-        state.audioOutput?.setDevice(getDeviceId(state))
+//        state.audioOutput?.setDevice(getDeviceId(state))
         if state.isOn {
           // Start (CONNECTED, status OFF, DEVICE selected)
           if state.isConnected && state.streamStatus == .off && state.deviceUid != nil {
@@ -131,13 +131,13 @@ public struct DaxMicCore {
   // MARK: - DAX effect methods
   
   private func daxStart(_ state: inout State) -> Effect<DaxMicCore.Action> {
-    state.audioOutput = DaxAudioOutput(deviceId: getDeviceId(state), gain: state.gain)
+//    state.audioOutput = DaxAudioOutput(deviceId: getDeviceId(state), gain: state.gain)
+    state.audioOutput = DaxAudioOutput()
     state.streamStatus = .streaming
-    return .run { [state] send in
-      // request a stream, reply to handler
-      await ApiModel.shared.requestDaxMicAudioStream(replyTo: state.audioOutput!.streamReplyHandler)
-      log("DaxMicCore: stream REQUESTED", .debug, #function, #file, #line)
-    }
+    // request a stream, reply to handler
+    ApiModel.shared.requestStream(StreamType.daxMicAudioStream, replyTo: state.audioOutput!.streamReplyHandler)
+    log("DaxMicCore: stream REQUESTED", .debug, #function, #file, #line)
+    return .none
   }
 
   private func daxStop(_ state: inout State) -> Effect<DaxMicCore.Action> {
@@ -147,10 +147,8 @@ public struct DaxMicCore {
     state.audioOutput = nil
     log("DaxMicCore: stream STOPPED", .debug, #function, #file, #line)
     if let streamId {
-      return .run { [streamId] _ in
-        // remove stream(s)
-        await ApiModel.shared.sendRemoveStreams([streamId])
-      }
+      // remove stream(s)
+      ApiModel.shared.removeStream(streamId)
     }
     return .none
   }

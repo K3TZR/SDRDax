@@ -11,7 +11,7 @@ import SwiftUI
 
 import DaxAudioFeature
 import FlexApiFeature
-import LevelIndicatorView
+import CustomControlFeature
 import SharedFeature
 
 struct DaxMicView: View {
@@ -55,8 +55,7 @@ struct DaxMicView: View {
                 Text("Gain")
                 Text("\(Int(store.gain))").frame(width: 40, alignment: .trailing)
               }
-              Slider(value: $store.gain, in: 0...100, label: {
-              })
+              Slider(value: $store.gain, in: 0...100, step: 1)
             }
           }
           LevelIndicatorView(levels: store.audioOutput?.levels ?? SignalLevel(rms: -40, peak: -40), type: .dax)

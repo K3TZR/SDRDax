@@ -90,8 +90,8 @@ public struct DaxRxCore {
         // MARK: - Binding Actions
                 
       case .binding(\.deviceUid):
-//        print("----->>>>> DaxRxCore: Binding deviceUid = \(state.deviceUid ?? "nil")")
-        state.audioOutput?.setDevice(getDeviceId(state))
+//        state.audioOutput?.setDevice(getDeviceId(state))
+//        print("----->>>>> DaxRxCore: Binding deviceUid = \(state.deviceUid ?? "nil"), id = \(getDeviceId(state))")
         if state.isOn {
           // Start (CONNECTED, status OFF, DEVICE selected)
           if state.isConnected && state.streamStatus == .off && state.deviceUid != nil {
@@ -131,13 +131,13 @@ public struct DaxRxCore {
   // MARK: - DAX effect methods
   
   private func daxStart(_ state: inout State) -> Effect<DaxRxCore.Action> {
-    state.audioOutput = DaxAudioOutput(deviceId: getDeviceId(state), gain: state.gain)
+//    state.audioOutput = DaxAudioOutput(deviceId: getDeviceId(state), gain: state.gain)
+    state.audioOutput = DaxAudioOutput()
     state.streamStatus = .streaming
-    return .run { [state] send in
-      // request a stream, reply to handler
-      await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.id, replyTo: state.audioOutput!.streamReplyHandler)
-      log("DaxRxCore: stream REQUESTED, channel = \(state.id)", .debug, #function, #file, #line)
-    }
+    // request a stream, reply to handler
+    ApiModel.shared.requestStream(StreamType.daxRxAudioStream, daxChannel: state.id, replyTo: state.audioOutput!.streamReplyHandler)
+    log("DaxRxCore: stream REQUESTED, channel = \(state.id)", .debug, #function, #file, #line)
+    return .none
   }
 
   private func daxStop(_ state: inout State) -> Effect<DaxRxCore.Action> {
@@ -147,16 +147,14 @@ public struct DaxRxCore {
     state.audioOutput = nil
     log("DaxRxCore: stream STOPPED, channel = \(state.id)", .debug, #function, #file, #line)
     if let streamId {
-      return .run { [streamId] _ in
-        // remove stream(s)
-        await ApiModel.shared.sendRemoveStreams([streamId])
-      }
+      // remove stream(s)
+      ApiModel.shared.removeStream(streamId)
     }
     return .none
   }
   
   private func getDeviceId(_ state: State) -> AudioDeviceID {
-    for device in state.audioDevices where device.uid == state.deviceUid! {
+    for device in state.audioDevices where device.uid == state.deviceUid {
       return device.id
     }
     fatalError("DaxRxCore: Device Id NOT FOUND")

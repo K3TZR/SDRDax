@@ -22,7 +22,8 @@ struct SDRDaxApp: App {
   
   @State var apiModel = ApiModel.shared
   @State var listenerModel = ListenerModel.shared
-  
+  @State var objectModel = ObjectModel.shared
+
   var body: some Scene {
     WindowGroup("SDRDax  (v" + Version().string + ")") {
       SDRDaxView(store: Store(initialState: SDRDaxCore.State()) {
@@ -32,6 +33,7 @@ struct SDRDaxApp: App {
       .padding(10)
       .environment(apiModel)
       .environment(listenerModel)
+      .environment(objectModel)
     }
     .windowStyle(.titleBar)
     .windowResizability(.contentSize)
@@ -104,7 +106,7 @@ public struct Version {
   public init() {
     let versions = Bundle.main.infoDictionary!["CFBundleShortVersionString"] as? String ?? "?"
     let build   = Bundle.main.infoDictionary![kCFBundleVersionKey as String] as? String ?? "?"
-    self.init(versions + ".\(build)")
+    self.init(versions + "\(build)")
   }
   
   public var string: String { "\(major).\(minor).\(build)" }
@@ -116,8 +118,9 @@ enum StreamStatus: String {
 }
 
 enum SliceStatus: String {
+  case notConnected = ""
   case sliceNotFound = "No Slice"
   case sliceFound = "Slice "
-  case waiting = "Waiting"
+//  case waiting = "Waiting"
 }
 

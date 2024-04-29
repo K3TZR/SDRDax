@@ -92,7 +92,7 @@ public struct DaxIqCore {
         
       case .binding(\.deviceUid):
 //        print("----->>>>> DaxIqCore: Binding deviceUid = \(state.deviceUid ?? "nil")")
-        state.audioOutput?.setDevice(getDeviceId(state))
+//        state.audioOutput?.setDevice(getDeviceId(state))
         if state.isOn {
           // Start (CONNECTED, status OFF, DEVICE selected)
           if state.isConnected && state.streamStatus == .off && state.deviceUid != nil {
@@ -133,13 +133,13 @@ public struct DaxIqCore {
   // MARK: - DAX effect methods
   
   private func daxStart(_ state: inout State) -> Effect<DaxIqCore.Action> {
-    state.audioOutput = DaxAudioOutput(deviceId: getDeviceId(state), gain: 100, sampleRate: state.sampleRate.rawValue)
+//    state.audioOutput = DaxAudioOutput(deviceId: getDeviceId(state), gain: 100, sampleRate: state.sampleRate.rawValue)
+    state.audioOutput = DaxAudioOutput(sampleRate: state.sampleRate.rawValue)
     state.streamStatus = .streaming
-    return .run { [state] send in
-      // request a stream, reply to handler
-      await ApiModel.shared.requestDaxRxAudioStream(daxChannel: state.id - 5, replyTo: state.audioOutput!.streamReplyHandler)
-      log("DaxIqCore: stream REQUESTED, channel = \(state.id - 5)", .debug, #function, #file, #line)
-    }
+    // request a stream, reply to handler
+    ApiModel.shared.requestStream(StreamType.daxIqStream, daxChannel: state.id - 5, replyTo: state.audioOutput!.streamReplyHandler)
+    log("DaxIqCore: stream REQUESTED, channel = \(state.id - 5)", .debug, #function, #file, #line)
+    return .none
   }
 
   private func daxStop(_ state: inout State) -> Effect<DaxIqCore.Action> {
@@ -149,10 +149,8 @@ public struct DaxIqCore {
     state.audioOutput = nil
     log("DaxIqCore: stream STOPPED, channel = \(state.id - 5)", .debug, #function, #file, #line)
     if let streamId {
-      return .run { [streamId] _ in
-        // remove stream(s)
-        await ApiModel.shared.sendRemoveStreams([streamId])
-      }
+      // remove stream(s)
+      ApiModel.shared.removeStream(streamId)
     }
     return .none
   }

@@ -11,22 +11,23 @@ import SwiftUI
 
 import DaxAudioFeature
 import FlexApiFeature
-import LevelIndicatorView
+import CustomControlFeature
 import SharedFeature
 
 struct DaxRxView: View {
   @Bindable var store: StoreOf<DaxRxCore>
   
   @Environment(ApiModel.self) var apiModel
+  @Environment(ObjectModel.self) var objectModel
 
   @MainActor private var activeSlice: String {
-    for slice in apiModel.slices where slice.daxChannel == store.id {
+    for slice in objectModel.slices where slice.daxChannel == store.id {
       return SliceStatus.sliceFound.rawValue + (slice.sliceLetter ?? "")
     }
     if store.isOn && store.isConnected {
-      return SliceStatus.waiting.rawValue
-    } else {
       return SliceStatus.sliceNotFound.rawValue
+    } else  {
+      return SliceStatus.notConnected.rawValue
     }
   }
     
@@ -71,8 +72,7 @@ struct DaxRxView: View {
                 Text("Gain")
                 Text("\(Int(store.gain))").frame(width: 40, alignment: .trailing)
               }
-              Slider(value: $store.gain, in: 0...100, label: {
-              })
+              Slider(value: $store.gain, in: 0...100, step: 1)
             }
           }
           LevelIndicatorView(levels: store.audioOutput?.levels ?? SignalLevel(rms: -40, peak: -40), type: .dax)
